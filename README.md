@@ -3,9 +3,4 @@
 A work-in-progress command-line tool to interact with warframe.market
 
 ## goals:
-- [ ] Login
-- [ ] Create item listing
-- [ ] Search item listings
-- [ ] Auctions
-- [ ] Search rivens
-- [ ] Search liches
+- [ ] OCR screen for relic rewards and show best choices
