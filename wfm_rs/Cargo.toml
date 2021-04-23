@@ -1,0 +1,21 @@
+[package]
+name = "wfm_rs"
+version = "0.1.0"
+authors = ["Jasper Fortuin <zeskeertwee@gmail.com>"]
+edition = "2018"
+license = "MIT"
+keywords = ["warframe","warframe-market"]
+repository = "https://github.com/zeskeertwee/wfm_cli"
+description = "An async library to interact with warframe-market's api, specifically built for wfm_cli"
+categories = ["api-bindings"]
+exclude = [
+    "README.md"
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.125", features = ["derive"] }
+serde_json = "1.0.64"
+reqwest = "0.11.3"
+anyhow = "1.0.40"

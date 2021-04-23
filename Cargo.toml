@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "wfm_rs",
+    "cli",
+]
+
+[profile.release]
+lto = true
+codegen-units = 1

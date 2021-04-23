@@ -1,0 +1,31 @@
+[package]
+name = "wfm_cli"
+version = "0.1.0"
+authors = ["Jasper Fortuin <zeskeertwee@gmail.com>"]
+edition = "2018"
+license = "MIT"
+keywords = ["warframe","warframe-market"]
+repository = "https://github.com/zeskeertwee/wfm_cli"
+description = "A command-line tool to see what the best relic reward is, based on warframe.market platinum prices"
+categories = ["command-line-utilities"]
+exclude = [
+    "test-data"
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wfm_rs = "0.1.0"
+tokio = { version = "1.5.0", features = ["macros", "rt-multi-thread"] }
+home = "0.5.3"
+anyhow = "1.0.40"
+serde = { version = "1.0.125", features = ["derive"] }
+serde_json = "1.0.64"
+text_io = "0.1.8"
+device_query = "0.2.8"
+screenshot-rs = "0.1.5"
+tesseract = "0.9.0"
+image = "0.23.14"
+levenshtein = "1.0.5"
+colored = "2.0.0"
+crossbeam-channel = "0.5"
