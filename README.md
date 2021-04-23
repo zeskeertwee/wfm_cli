@@ -1,6 +1,10 @@
 wfm_cli
 =======
 
+[![license](https://img.shields.io/crates/l/wfm_rs)](LICENSE)
+[![crates.io](https://img.shields.io/crates/v/wfm_rs)](https://crates.io/crates/wfm_cli)
+[![GitHub](https://img.shields.io/github/v/release/zeskeertwee/wfm_cli?label=Github)](https://github.com/zeskeertwee/wfm_cli)
+
 A command-line tool that screenshots the relic reward screen, and select the best reward, based on warframe.market platinum prices.
 
 ## Installation
