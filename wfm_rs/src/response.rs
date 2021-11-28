@@ -1,5 +1,11 @@
-use serde::{Serialize, Deserialize};
-use crate::traits::ItemUrl;
+use crate::shared::{OrderType, Platform};
+use crate::traits::{ItemID, ItemUrl, OrderID};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct SigninWrapper {
+    pub user: Signin,
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Signin {
@@ -7,17 +13,17 @@ pub struct Signin {
     pub anonymous: bool,
     pub verification: bool,
     pub ingame_name: String,
-    pub check_role: String,
+    pub check_code: String,
     pub role: String,
-    pub patreon_profile: SigninPatreonProfile,
-    pub platform: String,
+    pub patreon_profile: Option<SigninPatreonProfile>,
+    pub platform: Platform,
     pub region: String,
     pub banned: bool,
-    pub ban_reason: String,
-    pub avatar: String,
-    pub background: String,
+    pub ban_reason: Option<String>,
+    pub avatar: Option<String>,
+    pub background: Option<String>,
     pub linked_accounts: SigninLinkedAccounts,
-    pub has_email: bool,
+    pub has_mail: bool,
     pub written_reviews: u64,
     pub unread_messages: u64,
 }
@@ -34,16 +40,17 @@ pub struct SigninLinkedAccounts {
     pub steam_profile: bool,
     pub patreon_profile: bool,
     pub xbox_profile: bool,
+    pub discord_profile: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ResponseWrapper<T> {
-    pub(crate) payload: T,
+    pub payload: T,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Items {
-    pub items: Vec<ShortItem>
+    pub items: Vec<ShortItem>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -57,6 +64,12 @@ pub struct ShortItem {
 impl ItemUrl for ShortItem {
     fn item_url(&self) -> &str {
         self.url_name.as_str()
+    }
+}
+
+impl ItemID for ShortItem {
+    fn item_id(&self) -> &str {
+        self.id.as_str()
     }
 }
 
@@ -104,6 +117,12 @@ impl ItemUrl for LongSubItem {
     }
 }
 
+impl ItemID for LongSubItem {
+    fn item_id(&self) -> &str {
+        self.id.as_str()
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct LongSubItemLocale {
     pub item_name: String,
@@ -139,10 +158,16 @@ pub struct Order {
     pub creation_date: String,
     /// Sometimes this is a floating-point number
     pub platinum: f64,
-    pub platform: String,
-    pub order_type: String,
+    pub platform: Platform,
+    pub order_type: OrderType,
     pub region: String,
     pub id: String,
+}
+
+impl OrderID for Order {
+    fn order_id(&self) -> &str {
+        self.id.as_str()
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -197,4 +222,150 @@ pub struct MarketSubStatisticsLive {
     pub order_type: String,
     pub moving_avg: Option<f32>,
     pub id: String,
+}
+
+/// received from placing an order
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ProfileOrderResponseWrapper {
+    pub order: ProfileOrderResponse,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ProfileOrderResponse {
+    pub id: String,
+    pub platinum: f64,
+    pub quantity: u16,
+    pub order_type: OrderType,
+    pub platform: Platform,
+    pub region: String,
+    pub creation_date: String,
+    pub last_update: String,
+    pub visible: bool,
+}
+
+impl OrderID for ProfileOrderResponse {
+    fn order_id(&self) -> &str {
+        self.id.as_str()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ProfileOrderItem {
+    pub id: String,
+    pub url_name: String,
+    pub icon: String,
+    pub thumb: String,
+    pub sub_icon: String,
+    pub mod_max_rank: u8,
+    pub subtypes: Vec<String>,
+    pub tags: Vec<String>,
+    pub cyan_stars: u16,
+    pub amber_stars: u16,
+    pub ducats: u16,
+    pub en: ShortItemLocale,
+    pub ru: ShortItemLocale,
+    pub ko: ShortItemLocale,
+    pub fr: ShortItemLocale,
+    pub sv: ShortItemLocale,
+    pub de: ShortItemLocale,
+    #[serde(rename = "zh-hant")]
+    pub zh_hant: ShortItemLocale,
+    #[serde(rename = "zh-hans")]
+    pub zh_hans: ShortItemLocale,
+    pub pt: ShortItemLocale,
+    pub es: ShortItemLocale,
+    pub pl: ShortItemLocale,
+}
+
+impl ItemUrl for ProfileOrderItem {
+    fn item_url(&self) -> &str {
+        self.url_name.as_str()
+    }
+}
+
+impl ItemID for ProfileOrderItem {
+    fn item_id(&self) -> &str {
+        self.id.as_str()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ShortItemLocale {
+    pub item_name: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ExistingProfileOrders {
+    pub sell_orders: Vec<ExistingProfileOrder>,
+    pub buy_orders: Vec<ExistingProfileOrder>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ExistingProfileOrder {
+    pub quantity: u16,
+    pub last_update: String,
+    pub platinum: f64,
+    pub order_type: OrderType,
+    pub region: String,
+    pub item: ExistingProfileOrderItem,
+    /// this is the order id
+    pub id: String,
+    pub platform: Platform,
+    pub creation_date: String,
+    pub visible: bool,
+}
+
+impl OrderID for ExistingProfileOrder {
+    fn order_id(&self) -> &str {
+        self.id.as_str()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ExistingProfileOrderItem {
+    pub quantity_for_set: Option<u16>,
+    pub ducats: Option<u16>,
+    pub id: String,
+    pub url_name: String,
+    pub icon: String,
+    pub thumb: String,
+    pub icon_format: String,
+    pub tags: Vec<String>,
+    pub sub_icon: Option<String>,
+    pub en: ShortItemLocale,
+    pub ru: ShortItemLocale,
+    pub ko: ShortItemLocale,
+    pub fr: ShortItemLocale,
+    pub sv: ShortItemLocale,
+    pub de: ShortItemLocale,
+    #[serde(rename = "zh-hant")]
+    pub zh_hant: ShortItemLocale,
+    #[serde(rename = "zh-hans")]
+    pub zh_hans: ShortItemLocale,
+    pub pt: ShortItemLocale,
+    pub es: ShortItemLocale,
+    pub pl: ShortItemLocale,
+}
+
+impl ItemUrl for ExistingProfileOrderItem {
+    fn item_url(&self) -> &str {
+        self.url_name.as_str()
+    }
+}
+
+impl ItemID for ExistingProfileOrderItem {
+    fn item_id(&self) -> &str {
+        self.id.as_str()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct RemoveOrderResponse {
+    pub order_id: String,
+}
+
+impl OrderID for RemoveOrderResponse {
+    fn order_id(&self) -> &str {
+        self.order_id.as_str()
+    }
 }

@@ -1,13 +1,15 @@
-use std::{time::Duration, thread, fs};
-use ocr::OCREngine;
-use tokio;
-use device_query::{DeviceQuery, DeviceState, Keycode};
-use screenshot_rs;
-use util::{clear_terminal, screenshot_path, unix_timestamp};
-use wfm_rs::response::ShortItem;
-use wfm_rs::User;
 use anyhow::Result;
 use colored::*;
+use device_query::{DeviceQuery, DeviceState, Keycode};
+use ocr::OCREngine;
+use screenshot_rs;
+use std::{thread, time::Duration};
+use tokio;
+use util::{clear_terminal, screenshot_path, unix_timestamp};
+use wfm_rs::model::PostOrderDescriptor;
+use wfm_rs::response::ShortItem;
+use wfm_rs::shared::OrderType;
+use wfm_rs::User;
 
 mod config;
 mod ocr;
@@ -18,10 +20,22 @@ const DATA_SCREENSHOT_DIR: &str = "screenshots/";
 const DATA_CONFIG_FILE: &str = "config.wfm.json";
 const ITEMS_CACHE_EXPIRY_S: u64 = 24 * 60 * 60;
 const RESULT_COLORS: [Color; 4] = [
-    Color::TrueColor { r: 0,   g: 255, b: 8 },
-    Color::TrueColor { r: 255, g: 174, b: 9 },
-    Color::TrueColor { r: 255, g: 99,  b: 9},
-    Color::TrueColor { r: 255, g: 12,  b: 9}
+    Color::TrueColor { r: 0, g: 255, b: 8 },
+    Color::TrueColor {
+        r: 255,
+        g: 174,
+        b: 9,
+    },
+    Color::TrueColor {
+        r: 255,
+        g: 99,
+        b: 9,
+    },
+    Color::TrueColor {
+        r: 255,
+        g: 12,
+        b: 9,
+    },
 ];
 
 // TODO:
@@ -36,6 +50,23 @@ std::compile_error!("Windows is not supported!");
 async fn main() {
     let config = config::run().await.unwrap();
     let user = config.user();
+
+    let order = user
+        .post_order(&PostOrderDescriptor {
+            item_id: "6139101930dd5b004b7f9099".to_string(),
+            price: 20,
+            kind: OrderType::Sell,
+            visible: false,
+            quantity: 1,
+            rank: None,
+            subtype: Some("intact".to_string()),
+        })
+        .await
+        .unwrap();
+
+    user.remove_order(&order).await.unwrap();
+
+    return;
     let device = DeviceState::new();
     let engine = OCREngine::new(config.items);
     println!("You may now press '~' whenever you get to the relic reward screen");
@@ -49,27 +80,29 @@ async fn main() {
             let screenshot_path_str = screenshot_path.to_string_lossy().to_string();
             screenshot_rs::screenshot_window(screenshot_path_str.clone());
             let items = engine.ocr(&screenshot_path_str).unwrap();
-            fs::remove_file(screenshot_path).unwrap();
-            
+            //fs::remove_file(screenshot_path).unwrap();
+
             let mut all_item_stats = Vec::new();
-            
+
             for item in items {
                 all_item_stats.push(get_item_info(&item, &user).await.unwrap());
             }
-            
+
             all_item_stats.sort_by(|a, b| a.avg_price.partial_cmp(&b.avg_price).unwrap());
             let all_item_stats: Vec<&ItemStats> = all_item_stats.iter().rev().collect();
 
             clear_terminal();
-            
+
             for (idx, item) in all_item_stats.iter().enumerate() {
-                let msg = format!("{} | {:.1} platinum average | {:.0} sold in the last 48 hours", item.item.item_name, item.avg_price, item.volume);
+                let msg = format!(
+                    "{} | {:.1} platinum average | {:.0} sold in the last 48 hours",
+                    item.item.item_name, item.avg_price, item.volume
+                );
                 println!("{}", msg.color(RESULT_COLORS[idx]));
             }
         }
         thread::sleep(Duration::from_millis(10));
     }
-    
 }
 
 #[derive(Clone)]
@@ -83,7 +116,8 @@ async fn get_item_info(item: &ShortItem, user: &User) -> Result<ItemStats> {
     let statistics = user.get_item_market_statistics(item).await?;
 
     let last_stats = &statistics.statistics_closed._48_hours;
-    let avg_price: f32 = last_stats.iter().map(|x| x.avg_price).sum::<f32>() / last_stats.len() as f32;
+    let avg_price: f32 =
+        last_stats.iter().map(|x| x.avg_price).sum::<f32>() / last_stats.len() as f32;
     let volume: f32 = last_stats.iter().map(|x| x.volume).sum();
 
     Ok(ItemStats {
