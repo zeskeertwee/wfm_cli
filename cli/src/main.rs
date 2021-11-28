@@ -51,22 +51,6 @@ async fn main() {
     let config = config::run().await.unwrap();
     let user = config.user();
 
-    let order = user
-        .post_order(&PostOrderDescriptor {
-            item_id: "6139101930dd5b004b7f9099".to_string(),
-            price: 20,
-            kind: OrderType::Sell,
-            visible: false,
-            quantity: 1,
-            rank: None,
-            subtype: Some("intact".to_string()),
-        })
-        .await
-        .unwrap();
-
-    user.remove_order(&order).await.unwrap();
-
-    return;
     let device = DeviceState::new();
     let engine = OCREngine::new(config.items);
     println!("You may now press '~' whenever you get to the relic reward screen");
