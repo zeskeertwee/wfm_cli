@@ -21,3 +21,15 @@ pub struct ProfileOrder {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subtype: Option<String>,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct UpdateOrder {
+    pub item_id: String,
+    pub platinum: u64,
+    pub quantity: u16,
+    pub visible: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rank: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subtype: Option<String>,
+}
