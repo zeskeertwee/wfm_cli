@@ -81,3 +81,24 @@ pub(crate) async fn delete_endpoint<T: DeserializeOwned>(
 
     Ok(base.payload)
 }
+
+pub(crate) async fn put_endpoint<T: Serialize>(
+    client: &reqwest::Client,
+    url: &str,
+    jwt: &str,
+    body: &T,
+) -> Result<()> {
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert("authorization", jwt.parse()?);
+    headers.insert("Content-Type", "application/json".parse()?);
+
+    let raw = client
+        .put(format!("{}{}", BASE_URL, url))
+        .headers(headers)
+        .body(serde_json::to_string(body)?)
+        .send()
+        .await?
+        .error_for_status()?;
+
+    Ok(())
+}

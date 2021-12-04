@@ -1,7 +1,9 @@
 use crate::response::ProfileOrderResponseWrapper;
 use crate::shared::OrderType;
 use crate::traits::OrderID;
-use crate::{delete_endpoint, get_endpoint, post_endpoint, request, response, traits, BASE_URL};
+use crate::{
+    delete_endpoint, get_endpoint, post_endpoint, put_endpoint, request, response, traits, BASE_URL,
+};
 use anyhow::Result;
 use reqwest;
 use serde::{Deserialize, Serialize};
@@ -160,6 +162,29 @@ impl User {
         )
         .await?)
     }
+
+    pub async fn update_order<T: OrderID>(
+        &self,
+        order: &T,
+        desc: &UpdateOrderDescriptor,
+    ) -> Result<()> {
+        let body = request::UpdateOrder {
+            order_id: order.order_id().to_string(),
+            platinum: desc.platinum,
+            quantity: desc.quantity,
+            visible: desc.visible,
+            rank: desc.rank.clone(),
+            subtype: desc.subtype.clone(),
+        };
+
+        Ok(put_endpoint(
+            &self.client,
+            &format!("/profile/orders/{}", order.order_id()),
+            &self.jwt_token,
+            &body,
+        )
+        .await?)
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -169,6 +194,15 @@ pub struct PostOrderDescriptor {
     pub kind: OrderType,
     pub visible: bool,
     pub quantity: u16,
+    pub rank: Option<u8>,
+    pub subtype: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct UpdateOrderDescriptor {
+    pub platinum: u64,
+    pub quantity: u16,
+    pub visible: bool,
     pub rank: Option<u8>,
     pub subtype: Option<String>,
 }

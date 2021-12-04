@@ -24,7 +24,7 @@ pub struct ProfileOrder {
 
 #[derive(Serialize, Deserialize)]
 pub struct UpdateOrder {
-    pub item_id: String,
+    pub order_id: String,
     pub platinum: u64,
     pub quantity: u16,
     pub visible: bool,
