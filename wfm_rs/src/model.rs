@@ -2,12 +2,14 @@ use crate::response::ProfileOrderResponseWrapper;
 use crate::shared::OrderType;
 use crate::traits::OrderID;
 use crate::{
-    delete_endpoint, get_endpoint, post_endpoint, put_endpoint, request, response, traits, BASE_URL,
+    delete_endpoint, get_endpoint, post_endpoint, put_endpoint, request, response, traits,
+    Platform, BASE_URL,
 };
 use anyhow::Result;
 use reqwest;
 use serde::{Deserialize, Serialize};
 
+#[derive(Clone)]
 pub struct User {
     client: reqwest::Client,
     jwt_token: String,
@@ -18,7 +20,7 @@ impl User {
     pub async fn login(
         email: &str,
         password: &str,
-        platform: &str,
+        platform: &Platform,
         language: &str,
     ) -> Result<User> {
         let post_body = request::Signin {
@@ -32,7 +34,10 @@ impl User {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert("Content-Type", "application/json; utf-8".parse()?);
         headers.insert("Authorization", "JWT".parse()?);
-        headers.insert("platform", platform.parse()?);
+        headers.insert(
+            "platform",
+            format!("{:?}", platform).to_lowercase().parse()?,
+        );
         headers.insert("language", language.parse()?);
 
         let raw_response = req_client
@@ -182,6 +187,15 @@ impl User {
             &format!("/profile/orders/{}", order.order_id()),
             &self.jwt_token,
             &body,
+        )
+        .await?)
+    }
+
+    pub async fn get_auctions(&self) -> Result<response::ProfileAuctions> {
+        Ok(get_endpoint(
+            &self.client,
+            &format!("/profile/{}/auctions", self.username),
+            &self.jwt_token,
         )
         .await?)
     }

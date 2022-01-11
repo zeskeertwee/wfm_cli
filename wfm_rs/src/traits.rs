@@ -45,3 +45,19 @@ impl ItemID for &str {
         self
     }
 }
+
+pub trait AuctionID {
+    fn auction_id(&self) -> &str;
+}
+
+impl AuctionID for String {
+    fn auction_id(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl AuctionID for &str {
+    fn auction_id(&self) -> &str {
+        self
+    }
+}

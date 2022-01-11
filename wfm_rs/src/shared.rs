@@ -7,10 +7,19 @@ pub enum OrderType {
     Sell,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Platform {
     Pc,
     Xbox,
     Ps4,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum ModPolarity {
+    Madurai,
+    Vazarin,
+    Naramon,
+    Zenurik,
 }

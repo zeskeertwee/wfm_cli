@@ -1,4 +1,4 @@
-use crate::shared::{OrderType, Platform};
+use crate::shared::{ModPolarity, OrderType, Platform};
 use crate::traits::{ItemID, ItemUrl, OrderID};
 use serde::{Deserialize, Serialize};
 
@@ -368,4 +368,50 @@ impl OrderID for RemoveOrderResponse {
     fn order_id(&self) -> &str {
         self.order_id.as_str()
     }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ProfileAuctions {
+    pub auctions: Vec<ProfileAuction>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ProfileAuction {
+    pub item: AuctionItem,
+    pub note: String,
+    pub starting_price: Option<u32>,
+    pub minimal_reputation: u32,
+    pub private: bool,
+    pub visible: bool,
+    pub buyout_price: Option<u32>,
+    pub owner: String,
+    pub platform: Platform,
+    pub closed: bool,
+    pub top_bid: Option<u32>,
+    pub winner: Option<String>,
+    pub created: String,
+    pub updated: String,
+    pub note_raw: String,
+    pub is_direct_sell: bool,
+    pub id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct AuctionItem {
+    #[serde(rename = "type")]
+    pub kind: String,
+    pub weapon_url_name: String,
+    pub attributes: Vec<RivenAttribute>,
+    pub mod_rank: u8,
+    pub name: String,
+    pub re_rolls: u32,
+    pub mastery_level: u8,
+    pub polarity: ModPolarity,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct RivenAttribute {
+    pub positive: bool,
+    pub value: f64,
+    pub url_name: String,
 }
