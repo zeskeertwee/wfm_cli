@@ -29,10 +29,13 @@ pub(crate) const WFM_USER_KEY: &str = "wfm_user";
 const WFM_MANIFEST_EXPIRATION_SECONDS: u64 = 60 * 60 * 24;
 
 pub trait AppWindow: Send + 'static {
-    fn window_title(&self) -> &str;
+    fn window_title(&self) -> String;
     fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut egui::Ui);
-    fn should_close(&self, app: &App) -> bool;
 
+    fn init(&mut self, app: &App) {}
+    fn should_close(&self, app: &App) -> bool {
+        false
+    }
     fn show_close_button(&self) -> bool {
         true
     }
@@ -99,11 +102,12 @@ impl App {
         self.spawn_queue.lock().push(Box::new(window));
     }
 
-    fn spawn_window(&self, window: Box<dyn AppWindow>) {
+    fn spawn_window(&self, mut window: Box<dyn AppWindow>) {
         let id = self
             .id_counter
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
             + 1;
+        window.init(&self);
         self.app_windows.lock().insert(id, (window, true));
         trace!("Spawned window with id {}", id);
     }

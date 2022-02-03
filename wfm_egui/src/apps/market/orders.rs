@@ -11,8 +11,8 @@ pub struct ExistingProfileOrdersApp {
 }
 
 impl AppWindow for ExistingProfileOrdersApp {
-    fn window_title(&self) -> &str {
-        "Warframe.market orders"
+    fn window_title(&self) -> String {
+        "Warframe.market orders".to_string()
     }
 
     fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
@@ -54,9 +54,5 @@ impl AppWindow for ExistingProfileOrdersApp {
                 ));
             }
         })
-    }
-
-    fn should_close(&self, _app: &App) -> bool {
-        false
     }
 }

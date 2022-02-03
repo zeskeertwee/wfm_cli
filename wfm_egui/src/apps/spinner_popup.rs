@@ -18,8 +18,8 @@ pub struct SpinnerPopup {
 }
 
 impl AppWindow for SpinnerPopup {
-    fn window_title(&self) -> &str {
-        &self.title
+    fn window_title(&self) -> String {
+        self.title.clone()
     }
 
     fn show_close_button(&self) -> bool {

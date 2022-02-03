@@ -7,6 +7,7 @@ use anyhow::bail;
 use atomic_float::AtomicF64;
 use crossbeam_channel::Sender;
 use eframe::egui::panel::TopBottomSide;
+use eframe::egui::widgets::Button;
 use eframe::egui::{CtxRef, Grid, Rgba, RichText, TextEdit, TopBottomPanel, Ui};
 use levenshtein::levenshtein;
 use parking_lot::Mutex;
@@ -14,8 +15,10 @@ use tokio::runtime::Runtime;
 
 use wfm_rs::response::ExistingProfileOrders;
 use wfm_rs::response::ShortItem;
+use wfm_rs::shared::OrderType;
 
 use crate::app::{App, AppEvent, AppWindow, WFM_MANIFEST_KEY};
+use crate::apps::market::place_order::PlaceOrderPopup;
 use crate::background_jobs::wfm_manifest::WarframeMarketManifest;
 use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
 use crate::worker::Job;
@@ -31,8 +34,8 @@ pub struct ItemSearchApp {
 }
 
 impl AppWindow for ItemSearchApp {
-    fn window_title(&self) -> &str {
-        "Warframe.market item search"
+    fn window_title(&self) -> String {
+        "Warframe.market item search".to_string()
     }
 
     fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
@@ -82,10 +85,6 @@ impl AppWindow for ItemSearchApp {
             },
         );
     }
-
-    fn should_close(&self, _app: &App) -> bool {
-        false
-    }
 }
 
 impl ItemSearchApp {
@@ -109,39 +108,33 @@ impl ItemSearchApp {
                 for item in self.closest_items.lock().iter() {
                     ui.label(&item.item_name);
 
-                    let sell_text = if existing_orders
-                        .sell_orders
-                        .iter()
-                        .filter(|v| v.item.id == item.id)
-                        .count()
-                        >= 1
+                    if ui
+                        .add(
+                            Button::new(RichText::new("SELL").monospace().color(Rgba::from_rgb(
+                                27.0 / 255.0,
+                                177.0 / 255.0,
+                                148.0 / 255.0,
+                            )))
+                            .frame(false),
+                        )
+                        .clicked()
                     {
-                        "SELL"
-                    } else {
-                        "    "
-                    };
-                    ui.label(RichText::new(sell_text).monospace().color(Rgba::from_rgb(
-                        27.0 / 255.0,
-                        177.0 / 255.0,
-                        148.0 / 255.0,
-                    )));
+                        app.queue_window_spawn(PlaceOrderPopup::new(item.clone(), OrderType::Sell));
+                    }
 
-                    let buy_text = if existing_orders
-                        .buy_orders
-                        .iter()
-                        .filter(|v| v.item.id == item.id)
-                        .count()
-                        >= 1
+                    if ui
+                        .add(
+                            Button::new(RichText::new("BUY ").monospace().color(Rgba::from_rgb(
+                                60.0 / 255.0,
+                                135.0 / 255.0,
+                                156.0 / 255.0,
+                            )))
+                            .frame(false),
+                        )
+                        .clicked()
                     {
-                        "BUY"
-                    } else {
-                        "   "
-                    };
-                    ui.label(RichText::new(buy_text).monospace().color(Rgba::from_rgb(
-                        60.0 / 255.0,
-                        135.0 / 255.0,
-                        156.0 / 255.0,
-                    )));
+                        app.queue_window_spawn(PlaceOrderPopup::new(item.clone(), OrderType::Buy));
+                    }
 
                     ui.end_row();
                 }

@@ -38,8 +38,8 @@ impl Default for WarframeMarketAuthenticationWindow {
 }
 
 impl AppWindow for WarframeMarketAuthenticationWindow {
-    fn window_title(&self) -> &str {
-        "Warframe.market authentication"
+    fn window_title(&self) -> String {
+        "Warframe.market authentication".to_string()
     }
 
     fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
