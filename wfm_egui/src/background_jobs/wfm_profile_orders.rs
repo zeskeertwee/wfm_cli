@@ -1,9 +1,12 @@
+use std::time::SystemTime;
+
+use crossbeam_channel::Sender;
+use tokio::runtime::Runtime;
+
+use wfm_rs::User;
+
 use crate::app::{App, AppEvent};
 use crate::worker::{send_over_tx, Job};
-use crossbeam_channel::Sender;
-use std::time::SystemTime;
-use tokio::runtime::Runtime;
-use wfm_rs::User;
 
 pub const WFM_EXISTING_PROFILE_ORDERS_KEY: &str = "existing_profile_orders";
 pub const WFM_EXISTING_PROFILE_ORDERS_PENDING_KEY: &str = "existing_profile_orders_pending";
@@ -22,8 +25,6 @@ impl FetchExistingProfileOrdersJob {
 
 impl Job for FetchExistingProfileOrdersJob {
     fn run(&mut self, rt: &Runtime, tx: &Sender<AppEvent>) -> anyhow::Result<()> {
-        // TODO: Remove this when done testing
-        std::thread::sleep_ms(2000);
         let orders = rt.block_on(self.user.get_user_orders())?;
 
         send_over_tx(
@@ -37,7 +38,7 @@ impl Job for FetchExistingProfileOrdersJob {
                 WFM_EXISTING_PROFILE_ORDERS_KEY.to_string(),
                 Box::new(orders),
             ),
-        );
+        )?;
 
         send_over_tx(
             tx,
@@ -52,7 +53,7 @@ impl Job for FetchExistingProfileOrdersJob {
 
     fn on_submit(&mut self, app: &App) -> anyhow::Result<()> {
         if app.present_in_storage(WFM_EXISTING_PROFILE_ORDERS_PENDING_KEY) {
-            return Err(anyhow::bail!("Already pending"));
+            anyhow::bail!("Already pending")
         }
 
         app.insert_into_storage(WFM_EXISTING_PROFILE_ORDERS_PENDING_KEY, ());

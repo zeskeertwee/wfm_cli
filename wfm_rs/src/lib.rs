@@ -92,7 +92,7 @@ pub(crate) async fn put_endpoint<T: Serialize>(
     headers.insert("authorization", jwt.parse()?);
     headers.insert("Content-Type", "application/json".parse()?);
 
-    let raw = client
+    let _ = client
         .put(format!("{}{}", BASE_URL, url))
         .headers(headers)
         .body(serde_json::to_string(body)?)

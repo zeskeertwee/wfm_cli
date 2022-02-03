@@ -1,11 +1,12 @@
-use crate::app::{App, AppWindow};
-use eframe::egui::{CtxRef, Ui};
-use eguikit::spinner::Style;
-use eguikit::Spinner;
-use std::ops::Add;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use std::time::Instant;
+
+use eframe::egui::{CtxRef, Ui};
+use eguikit::spinner::Style;
+use eguikit::Spinner;
+
+use crate::app::{App, AppWindow};
 
 pub struct SpinnerPopup {
     pending_storage_key: String,
@@ -25,7 +26,7 @@ impl AppWindow for SpinnerPopup {
         false
     }
 
-    fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, _app: &App, _ctx: &CtxRef, ui: &mut Ui) {
         ui.add_space(50.0);
         ui.vertical_centered(|ui| {
             ui.label(match self.show_finished_text.load(Ordering::Relaxed) {

@@ -1,3 +1,17 @@
+use std::any::Any;
+use std::sync::atomic::AtomicU64;
+use std::time::{Duration, Instant, SystemTime};
+
+use ahash::AHashMap;
+use crossbeam_channel::{unbounded, Receiver, Sender};
+use eframe::egui::{CtxRef, Id, Rgba, TextureId, Window};
+use eframe::epi::{Frame, Storage};
+use eframe::{egui, epi};
+use log::{info, trace, warn};
+use parking_lot::Mutex;
+
+use wfm_rs::User;
+
 use crate::apps::authenticate::WarframeMarketAuthenticationWindow;
 use crate::background_jobs::wfm_manifest::{WarframeMarketManifest, WarframeMarketManifestLoadJob};
 use crate::background_jobs::wfm_profile_orders::{
@@ -7,21 +21,8 @@ use crate::background_jobs::wfm_profile_orders::{
 use crate::texture::TextureSource;
 use crate::util::clone_option_with_inner_ref;
 use crate::worker::{Job, WorkerPool};
-use ahash::AHashMap;
-use crossbeam_channel::{unbounded, Receiver, Sender};
-use eframe::egui::{CtxRef, Id, Rgba, TextureId, Window};
-use eframe::epi::{Frame, Storage};
-use eframe::{egui, epi};
-use log::{info, trace, warn};
-use parking_lot::Mutex;
-use std::any::Any;
-use std::ops::Sub;
-use std::sync::atomic::AtomicU64;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
-use wfm_rs::User;
 
 const IMAGE_PLACEHOLDER_PNG: &[u8] = include_bytes!("../placeholder_texture.png");
-const WFM_MANIFEST_SPINNER_KEY: &str = "wfm_manifest_spinner";
 pub(crate) const WFM_MANIFEST_KEY: &str = "wfm_manifest";
 pub(crate) const WFM_MANIFEST_PENDING_KEY: &str = "wfm_manifest_pending";
 pub(crate) const WFM_USER_KEY: &str = "wfm_user";

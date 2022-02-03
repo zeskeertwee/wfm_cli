@@ -1,12 +1,15 @@
+use std::sync::Arc;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use crossbeam_channel::Sender;
+use serde::{Deserialize, Serialize};
+use tokio::runtime::Runtime;
+
+use wfm_rs::User;
+
 use crate::app::{App, AppEvent};
 use crate::apps::spinner_popup::SpinnerPopup;
 use crate::worker::{send_over_tx, Job};
-use crossbeam_channel::Sender;
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
-use tokio::runtime::Runtime;
-use wfm_rs::User;
 
 #[derive(Serialize, Deserialize)]
 pub struct WarframeMarketManifest {
@@ -35,8 +38,6 @@ impl WarframeMarketManifestLoadJob {
 
 impl Job for WarframeMarketManifestLoadJob {
     fn run(&mut self, rt: &Runtime, tx: &Sender<AppEvent>) -> anyhow::Result<()> {
-        std::thread::sleep_ms(5000);
-
         let items = rt.block_on(self.user.get_items())?;
         let manifest = WarframeMarketManifest {
             timestamp: SystemTime::now()
@@ -57,7 +58,7 @@ impl Job for WarframeMarketManifestLoadJob {
         send_over_tx(
             tx,
             AppEvent::RemoveFromStorage(crate::app::WFM_MANIFEST_PENDING_KEY.to_string()),
-        );
+        )?;
 
         Ok(())
     }

@@ -1,14 +1,17 @@
-use crate::app::{App, AppEvent, AppWindow};
-use crate::worker::{Job, JobState};
+use std::sync::Arc;
+
 use crossbeam_channel::Sender;
-use eframe::egui::{ComboBox, CtxRef, ProgressBar, TextEdit, Ui};
+use eframe::egui::{ComboBox, CtxRef, TextEdit, Ui};
 use eguikit::spinner::Style;
 use eguikit::Spinner;
 use log::info;
 use parking_lot::Mutex;
-use std::sync::Arc;
 use tokio::runtime::Runtime;
+
 use wfm_rs::User;
+
+use crate::app::{App, AppEvent, AppWindow};
+use crate::worker::{Job, JobState};
 
 type AuthenticateState = JobState<User>;
 
@@ -137,7 +140,8 @@ impl AuthenticateJob {
 }
 
 impl Job for AuthenticateJob {
-    fn run(&mut self, rt: &Runtime, tx: &Sender<AppEvent>) -> anyhow::Result<()> {
+    fn run(&mut self, rt: &Runtime, _tx: &Sender<AppEvent>) -> anyhow::Result<()> {
+        // TODO: use storage
         *self.state.lock() = AuthenticateState::Pending;
 
         let result = rt.block_on(User::login(

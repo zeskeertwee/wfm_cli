@@ -1,8 +1,9 @@
-use crate::app::{App, AppWindow};
-use crate::background_jobs::wfm_manifest::WarframeMarketManifest;
-use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
 use eframe::egui::{CtxRef, ScrollArea, Ui};
+
 use wfm_rs::response::ExistingProfileOrders;
+
+use crate::app::{App, AppWindow};
+use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
 
 #[derive(Default)]
 pub struct ExistingProfileOrdersApp {
@@ -14,7 +15,7 @@ impl AppWindow for ExistingProfileOrdersApp {
         "Warframe.market orders"
     }
 
-    fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
         if self.orders.is_none() {
             match app.get_from_storage::<ExistingProfileOrders, _, _>(
                 WFM_EXISTING_PROFILE_ORDERS_KEY,
@@ -55,7 +56,7 @@ impl AppWindow for ExistingProfileOrdersApp {
         })
     }
 
-    fn should_close(&self, app: &App) -> bool {
+    fn should_close(&self, _app: &App) -> bool {
         false
     }
 }

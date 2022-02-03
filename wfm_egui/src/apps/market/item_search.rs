@@ -1,7 +1,8 @@
-use crate::app::{App, AppEvent, AppWindow, WFM_MANIFEST_KEY};
-use crate::background_jobs::wfm_manifest::WarframeMarketManifest;
-use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
-use crate::worker::Job;
+use std::cmp::min;
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+use std::time::Instant;
+
 use anyhow::bail;
 use atomic_float::AtomicF64;
 use crossbeam_channel::Sender;
@@ -9,14 +10,15 @@ use eframe::egui::panel::TopBottomSide;
 use eframe::egui::{CtxRef, Grid, Rgba, RichText, TextEdit, TopBottomPanel, Ui};
 use levenshtein::levenshtein;
 use parking_lot::Mutex;
-use pretty_env_logger::env_logger::fmt::Color;
-use std::cmp::min;
-use std::sync::atomic::Ordering;
-use std::sync::Arc;
-use std::time::Instant;
 use tokio::runtime::Runtime;
+
 use wfm_rs::response::ExistingProfileOrders;
 use wfm_rs::response::ShortItem;
+
+use crate::app::{App, AppEvent, AppWindow, WFM_MANIFEST_KEY};
+use crate::background_jobs::wfm_manifest::WarframeMarketManifest;
+use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
+use crate::worker::Job;
 
 const ITEM_SEARCH_PENDING_KEY: &str = "wfm_item_search_pending";
 
@@ -33,7 +35,7 @@ impl AppWindow for ItemSearchApp {
         "Warframe.market item search"
     }
 
-    fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
         if self.manifest.is_none() {
             match app
                 .get_from_storage::<WarframeMarketManifest, _, _>(WFM_MANIFEST_KEY, |manifest| {
@@ -81,7 +83,7 @@ impl AppWindow for ItemSearchApp {
         );
     }
 
-    fn should_close(&self, app: &App) -> bool {
+    fn should_close(&self, _app: &App) -> bool {
         false
     }
 }
@@ -178,7 +180,7 @@ const KEYWORDS: [&'static str; 14] = [
 ];
 
 impl Job for FindClosestItemsJob {
-    fn run(&mut self, rt: &Runtime, tx: &Sender<AppEvent>) -> anyhow::Result<()> {
+    fn run(&mut self, _rt: &Runtime, tx: &Sender<AppEvent>) -> anyhow::Result<()> {
         let start = Instant::now();
         let search_text_keywords = get_keywords_for_string(&self.search_text);
 

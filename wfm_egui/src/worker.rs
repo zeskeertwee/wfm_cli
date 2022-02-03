@@ -1,12 +1,13 @@
-use crate::app::{App, AppEvent};
-use anyhow::anyhow;
-use crossbeam_channel::{unbounded, Receiver, RecvError, Sender};
-use log::info;
 use std::any::Any;
 use std::future::Future;
 use std::thread;
 use std::thread::JoinHandle;
+
+use crossbeam_channel::{unbounded, Receiver, Sender};
+use log::info;
 use tokio::runtime::Runtime;
+
+use crate::app::{App, AppEvent};
 
 pub trait Job: Any + Send + Sync + Unpin + 'static {
     fn run(&mut self, rt: &Runtime, tx: &Sender<AppEvent>) -> anyhow::Result<()>;
@@ -14,7 +15,7 @@ pub trait Job: Any + Send + Sync + Unpin + 'static {
     /// use this as a guard against having multiple of the same job pending
     /// if this returns Err(), the job will not be submitted and run() will never be called
     /// returning an error here does not return an error from the submit_job() function
-    fn on_submit(&mut self, app: &App) -> anyhow::Result<()> {
+    fn on_submit(&mut self, _app: &App) -> anyhow::Result<()> {
         Ok(())
     }
     fn job_name(&self) -> &'static str {
@@ -26,7 +27,7 @@ impl<T> Job for T
 where
     T: Future<Output = anyhow::Result<()>> + Send + Sync + Unpin + 'static,
 {
-    fn run(&mut self, rt: &Runtime, tx: &Sender<AppEvent>) -> anyhow::Result<()> {
+    fn run(&mut self, rt: &Runtime, _tx: &Sender<AppEvent>) -> anyhow::Result<()> {
         rt.block_on(self)
     }
 }

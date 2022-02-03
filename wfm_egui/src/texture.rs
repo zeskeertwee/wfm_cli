@@ -1,6 +1,7 @@
+use std::path::PathBuf;
+
 use eframe::egui::TextureId;
 use eframe::epi;
-use std::path::PathBuf;
 
 pub enum TextureSource {
     Url(String),
