@@ -2,12 +2,12 @@ use crate::shared::{ModPolarity, OrderType, Platform};
 use crate::traits::{ItemID, ItemUrl, OrderID};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct SigninWrapper {
     pub user: Signin,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct Signin {
     pub id: String,
     pub anonymous: bool,
@@ -28,14 +28,14 @@ pub struct Signin {
     pub unread_messages: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct SigninPatreonProfile {
     pub patreon_founder: bool,
     pub subscription: bool,
     pub patreon_badge: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct SigninLinkedAccounts {
     pub steam_profile: bool,
     pub patreon_profile: bool,
@@ -43,17 +43,17 @@ pub struct SigninLinkedAccounts {
     pub discord_profile: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ResponseWrapper<T> {
     pub payload: T,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct Items {
     pub items: Vec<ShortItem>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ShortItem {
     pub url_name: String,
     pub thumb: String,
@@ -73,13 +73,13 @@ impl ItemID for ShortItem {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct LongItem {
     pub id: String,
     pub items_in_set: Vec<LongSubItem>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct LongSubItem {
     pub id: String,
     pub url_name: String,
@@ -123,7 +123,7 @@ impl ItemID for LongSubItem {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct LongSubItemLocale {
     pub item_name: String,
     pub description: String,
@@ -131,7 +131,7 @@ pub struct LongSubItemLocale {
     pub drop: Vec<ItemDrop>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ItemDrop {
     pub name: String,
     pub link: String,
@@ -143,12 +143,12 @@ impl ItemUrl for ItemDrop {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct Orders {
     pub orders: Vec<Order>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct Order {
     pub quantity: u16,
     pub user: OrderUser,
@@ -170,7 +170,7 @@ impl OrderID for Order {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct OrderUser {
     pub reputation: u16,
     pub region: String,
@@ -180,13 +180,13 @@ pub struct OrderUser {
     // missing: avatar, last_seen
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct MarketStatisticsWrapper {
     pub statistics_closed: MarketStatistics<MarketSubStatisticsClosed>,
     pub statistics_live: MarketStatistics<MarketSubStatisticsLive>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct MarketStatistics<T> {
     #[serde(rename = "48hours")]
     pub _48_hours: Vec<T>,
@@ -194,7 +194,7 @@ pub struct MarketStatistics<T> {
     pub _90_days: Vec<T>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct MarketSubStatisticsClosed {
     pub datetime: String,
     pub volume: f32,
@@ -210,7 +210,7 @@ pub struct MarketSubStatisticsClosed {
     pub id: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct MarketSubStatisticsLive {
     pub datetime: String,
     pub volume: f32,
@@ -225,12 +225,12 @@ pub struct MarketSubStatisticsLive {
 }
 
 /// received from placing an order
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProfileOrderResponseWrapper {
     pub order: ProfileOrderResponse,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProfileOrderResponse {
     pub id: String,
     pub platinum: f64,
@@ -249,7 +249,7 @@ impl OrderID for ProfileOrderResponse {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProfileOrderItem {
     pub id: String,
     pub url_name: String,
@@ -289,18 +289,18 @@ impl ItemID for ProfileOrderItem {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ShortItemLocale {
     pub item_name: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ExistingProfileOrders {
     pub sell_orders: Vec<ExistingProfileOrder>,
     pub buy_orders: Vec<ExistingProfileOrder>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ExistingProfileOrder {
     pub quantity: u16,
     pub last_update: String,
@@ -321,7 +321,7 @@ impl OrderID for ExistingProfileOrder {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ExistingProfileOrderItem {
     pub quantity_for_set: Option<u16>,
     pub ducats: Option<u16>,
@@ -359,7 +359,7 @@ impl ItemID for ExistingProfileOrderItem {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct RemoveOrderResponse {
     pub order_id: String,
 }
@@ -370,12 +370,12 @@ impl OrderID for RemoveOrderResponse {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProfileAuctions {
     pub auctions: Vec<ProfileAuction>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ProfileAuction {
     pub item: AuctionItem,
     pub note: String,
@@ -396,7 +396,7 @@ pub struct ProfileAuction {
     pub id: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct AuctionItem {
     #[serde(rename = "type")]
     pub kind: String,
@@ -409,7 +409,7 @@ pub struct AuctionItem {
     pub polarity: ModPolarity,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct RivenAttribute {
     pub positive: bool,
     pub value: f64,

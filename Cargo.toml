@@ -2,6 +2,7 @@
 members = [
     "wfm_rs",
     "cli",
+    "wfm_egui",
 ]
 
 [profile.release]

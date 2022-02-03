@@ -16,6 +16,12 @@ pub struct User {
     username: String,
 }
 
+impl PartialEq for User {
+    fn eq(&self, other: &Self) -> bool {
+        self.username == other.username && self.jwt_token == other.jwt_token
+    }
+}
+
 impl User {
     pub async fn login(
         email: &str,

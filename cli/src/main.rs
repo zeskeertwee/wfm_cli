@@ -51,6 +51,14 @@ async fn main() {
     let config = config::run().await.unwrap();
     let user = config.user();
 
+    for i in user.get_auctions().await.unwrap().auctions {
+        println!(
+            "{}, {:?} {:?} {}",
+            i.item.weapon_url_name, i.starting_price, i.buyout_price, i.owner
+        );
+    }
+
+    return;
     let device = DeviceState::new();
     let engine = OCREngine::new(config.items);
     println!("You may now press '~' whenever you get to the relic reward screen");
