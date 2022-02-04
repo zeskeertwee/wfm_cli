@@ -680,7 +680,7 @@ dependencies = [
 [[package]]
 name = "eguikit"
 version = "0.1.0"
-source = "git+https://github.com/zeskeertwee/eguikit?rev=669011cae0eb50f574a473ba27f1841e169bfa8d#669011cae0eb50f574a473ba27f1841e169bfa8d"
+source = "git+https://github.com/sagebind/eguikit?rev=ccffbd3f79f22e0a62ab18cb1e4c60d3893497d8#ccffbd3f79f22e0a62ab18cb1e4c60d3893497d8"
 dependencies = [
  "egui",
  "keyframe",
