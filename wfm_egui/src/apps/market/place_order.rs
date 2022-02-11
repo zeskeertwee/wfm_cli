@@ -5,6 +5,7 @@ use eframe::egui::{ComboBox, CtxRef, Grid, ScrollArea, Ui};
 use std::cmp::max;
 use wfm_rs::response::ShortItem;
 use wfm_rs::shared::OrderType;
+use crate::apps::error_popup::ErrorPopup;
 
 pub struct PlaceOrderPopup {
     item: ShortItem,
@@ -49,6 +50,8 @@ impl AppWindow for PlaceOrderPopup {
                 self.item.item_name,
                 self.price().unwrap_or(0)
             );
+
+            app.queue_window_spawn(ErrorPopup::new("STUB", "Placing orders is not yet implemeneted!"))
         }
 
         if let Some(orders) = app.get_from_storage::<ItemOrders, _, _>(
