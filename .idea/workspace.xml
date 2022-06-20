@@ -9,11 +9,9 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9b80761f-54b4-4830-83ba-fb184f1a1ef2" name="Changes" comment="">
+    <list default="true" id="9b80761f-54b4-4830-83ba-fb184f1a1ef2" name="Changes" comment="it works!">
+      <change afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli/src/config.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/config.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli/src/util.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/util.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +80,7 @@
       <workItem from="1655717012924" duration="178000" />
       <workItem from="1655717195176" duration="3582000" />
       <workItem from="1655721026075" duration="902000" />
-      <workItem from="1655736870847" duration="2942000" />
+      <workItem from="1655736870847" duration="3407000" />
     </task>
     <task id="LOCAL-00001" summary="add error popup">
       <created>1644579599710</created>
@@ -91,7 +89,14 @@
       <option name="project" value="LOCAL" />
       <updated>1644579599711</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="it works!">
+      <created>1655739844893</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1655739844893</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -122,7 +127,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="add error popup" />
-    <option name="LAST_COMMIT_MESSAGE" value="add error popup" />
+    <MESSAGE value="it works!" />
+    <option name="LAST_COMMIT_MESSAGE" value="it works!" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

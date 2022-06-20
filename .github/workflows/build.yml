@@ -1,0 +1,37 @@
+name: Build CLI binary
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+        - uses: actions/checkout@v2
+        - name: Install dependencies
+          run: sudo apt install libssl-dev -y
+        - name: Build CLI
+          run: cargo build --release --verbose
+        - name: Upload CLI binary artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: linux-undercut-o-matic.x86-64
+            path: target/release/wfm_cli
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+        - uses: actions/checkout@v2
+        - name: Build CLI
+          run: cargo build --release --verbose
+        - name: Upload CLI binary artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: windows-undercut-o-matic.exe
+            path: target/release/wfm_cli.exe
