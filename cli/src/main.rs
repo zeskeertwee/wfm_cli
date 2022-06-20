@@ -1,112 +1,126 @@
-use anyhow::Result;
+#![feature(drain_filter)]
+
 use colored::*;
-use device_query::{DeviceQuery, DeviceState, Keycode};
-use ocr::OCREngine;
-use screenshot_rs;
-use std::{thread, time::Duration};
-use tokio;
-use util::{clear_terminal, screenshot_path, unix_timestamp};
-use wfm_rs::model::PostOrderDescriptor;
-use wfm_rs::response::ShortItem;
+use util::{clear_terminal, unix_timestamp};
+use wfm_rs::response::{ExistingProfileOrder, Order};
 use wfm_rs::shared::OrderType;
-use wfm_rs::User;
 
 mod config;
-mod ocr;
 mod util;
 
 const DATA_PATH_SUFFIX: &str = ".wfm_cli/";
-const DATA_SCREENSHOT_DIR: &str = "screenshots/";
 const DATA_CONFIG_FILE: &str = "config.wfm.json";
 const ITEMS_CACHE_EXPIRY_S: u64 = 24 * 60 * 60;
-const RESULT_COLORS: [Color; 4] = [
-    Color::TrueColor { r: 0, g: 255, b: 8 },
-    Color::TrueColor {
-        r: 255,
-        g: 174,
-        b: 9,
-    },
-    Color::TrueColor {
-        r: 255,
-        g: 99,
-        b: 9,
-    },
-    Color::TrueColor {
-        r: 255,
-        g: 12,
-        b: 9,
-    },
-];
 
-// TODO:
-// - silence tesseract dpi complaining
-// - release wfm_rs
-// - release cli
+enum OrderStatus {
+    Undercut {
+        below: Vec<Order>,
+        pos: (usize, usize)
+    },
+    Lowest {
+        next: Order,
+    },
+    SharedLowest,
+}
 
-#[cfg(target_os = "windows")]
-std::compile_error!("Windows is not supported!");
+struct OrderScanReport {
+    status: OrderStatus,
+    order: ExistingProfileOrder,
+}
 
 #[tokio::main]
 async fn main() {
     let config = config::run().await.unwrap();
     let user = config.user();
 
-    let device = DeviceState::new();
-    let engine = OCREngine::new(config.items);
-    println!("You may now press '~' whenever you get to the relic reward screen");
+    let existing_orders = user.get_user_orders().await.unwrap();
 
-    loop {
-        let keys: Vec<Keycode> = device.get_keys();
-        if keys.contains(&Keycode::Grave) {
-            println!("Scanning...");
-            let mut screenshot_path = screenshot_path().unwrap();
-            screenshot_path.push(format!("{}.png", unix_timestamp().unwrap()));
-            let screenshot_path_str = screenshot_path.to_string_lossy().to_string();
-            screenshot_rs::screenshot_window(screenshot_path_str.clone());
-            let items = engine.ocr(&screenshot_path_str).unwrap();
-            //fs::remove_file(screenshot_path).unwrap();
+    let mut scan_results: Vec<OrderScanReport> = Vec::new();
 
-            let mut all_item_stats = Vec::new();
+    for sell_order in existing_orders.sell_orders {
+        let mut item_orders = user.get_item_orders(&sell_order.item).await.unwrap();
+        item_orders.drain_filter(|v| v.user.status != "ingame" || v.order_type == OrderType::Buy);
+        item_orders.sort_by(|a, b| a.platinum.partial_cmp(&b.platinum).unwrap());
+        if item_orders[0].platinum < sell_order.platinum {
+            let mut pos = (usize::MAX, usize::MAX);
+            for (idx, order) in item_orders.iter().enumerate() {
+                if order.platinum == sell_order.platinum {
+                    pos.0 = idx + 1;
 
-            for item in items {
-                all_item_stats.push(get_item_info(&item, &user).await.unwrap());
+                    break;
+                }
+
+                if order.platinum > sell_order.platinum {
+                    pos.0 = idx + 1;
+                    pos.1 = pos.0;
+
+                    break;
+                }
             }
 
-            all_item_stats.sort_by(|a, b| a.avg_price.partial_cmp(&b.avg_price).unwrap());
-            let all_item_stats: Vec<&ItemStats> = all_item_stats.iter().rev().collect();
+            if pos.1 == usize::MAX {
+                pos.1 = pos.0 + item_orders.iter().filter(|v| v.platinum == sell_order.platinum).count();
+            }
 
-            clear_terminal();
+            println!("{} on {}: LOW {} - YOU {} | POS {}-{}", "[UND]".cyan(), sell_order.item.en.item_name, item_orders[0].platinum, sell_order.platinum, pos.0, pos.1);
 
-            for (idx, item) in all_item_stats.iter().enumerate() {
-                let msg = format!(
-                    "{} | {:.1} platinum average | {:.0} sold in the last 48 hours",
-                    item.item.item_name, item.avg_price, item.volume
-                );
-                println!("{}", msg.color(RESULT_COLORS[idx]));
+            let mut below = Vec::new();
+            for i in 0..pos.0 - 1 {
+                below.push(item_orders[i].clone());
+            }
+
+            scan_results.push(OrderScanReport {
+                order: sell_order,
+                status: OrderStatus::Undercut { below, pos },
+            });
+        } else {
+            let lowest_orders: Vec<Order> = item_orders.iter().filter(|v| v.platinum == sell_order.platinum).map(|v| v.clone()).collect();
+            let self_in_lowest = lowest_orders.iter().any(|v| v.id == sell_order.id);
+            let lowest_count = lowest_orders.len();
+
+            if (self_in_lowest && lowest_count == 1) || (!self_in_lowest && lowest_count == 0) {
+                let next_order = &item_orders[if self_in_lowest { 1 } else { 0 }];
+
+                println!("{} on {}: YOU {} - NEXT {}", "[LOW]".green(), sell_order.item.en.item_name, sell_order.platinum, next_order.platinum);
+                scan_results.push(OrderScanReport {
+                    order: sell_order,
+                    status: OrderStatus::Lowest { next: next_order.clone() },
+                })
+            } else {
+                println!("{} on {}: YOU {} | POS 1-{}", "[SHR]".yellow(), sell_order.item.en.item_name, sell_order.platinum, lowest_count);
+                scan_results.push(OrderScanReport {
+                    order: sell_order,
+                    status: OrderStatus::SharedLowest,
+                })
             }
         }
-        thread::sleep(Duration::from_millis(10));
     }
-}
 
-#[derive(Clone)]
-struct ItemStats {
-    volume: f32,
-    avg_price: f32,
-    item: ShortItem,
-}
+    if scan_results.is_empty() {
+        println!("\nNo issues found with open sell orders!");
+        println!("Goodbye!");
+        println!("\n\nPress [Enter] to close the program");
+        let mut buf = String::new();
+        std::io::stdin().read_line(&mut buf);
+        return;
+    }
 
-async fn get_item_info(item: &ShortItem, user: &User) -> Result<ItemStats> {
-    let statistics = user.get_item_market_statistics(item).await?;
+    println!("\nFixing {} sell orders", scan_results.len());
 
-    let last_stats = &statistics.statistics_closed._48_hours;
-    let avg_price: f32 =
-        last_stats.iter().map(|x| x.avg_price).sum::<f32>() / last_stats.len() as f32;
-    let volume: f32 = last_stats.iter().map(|x| x.volume).sum();
+    for (idx, report) in scan_results.iter().enumerate() {
+        println!("\n{} ({}/{})", report.order.item.en.item_name, idx, scan_results.len());
 
-    Ok(ItemStats {
-        volume,
-        avg_price,
-        item: item.clone(),
-    })
+        match &report.status {
+            OrderStatus::Undercut { below, pos } => {
+                println!("{}", "Existing orders below you:".cyan());
+
+                for (i, order) in below.iter().enumerate() {
+                    println!("{:>6} | PRICE {} | {}", i, order.platinum, order.user.ingame_name);
+                }
+
+                println!("{:>6} | PRICE {} | {}", format!("{}-{}", pos.0, pos.1), report.order.platinum, "<--- YOU".red());
+            },
+            _ => (),
+        }
+    }
 }

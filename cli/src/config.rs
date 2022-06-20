@@ -1,5 +1,5 @@
 use crate::{
-    util::{config_path, data_path, screenshot_path, unix_timestamp},
+    util::{config_path, data_path, unix_timestamp},
     ITEMS_CACHE_EXPIRY_S,
 };
 use anyhow::Result;
@@ -10,6 +10,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::time::SystemTime;
 use text_io;
+use wfm_rs::Platform;
 use wfm_rs::response::ShortItem;
 
 type JwtToken = String;
@@ -31,7 +32,6 @@ impl Config {
 #[allow(unused_must_use)]
 pub async fn run() -> Result<Config> {
     let data_path = data_path()?;
-    let data_path_screenshot = screenshot_path()?;
     let data_path_config = config_path()?;
 
     let config = {
@@ -57,7 +57,6 @@ pub async fn run() -> Result<Config> {
             cfg
         } else {
             fs::create_dir(&data_path);
-            fs::create_dir(&data_path_screenshot);
             File::create(&data_path_config);
 
             let (token, username) = login_process().await?;
@@ -90,7 +89,18 @@ async fn login_process() -> Result<(JwtToken, String)> {
 
     let email = prompt("E-mail:");
     let password = prompt("Password:");
-    let platform = prompt("Platform (pc, xbox or ps4):");
+    let mut platform;
+    loop {
+        let input = prompt("Platform (pc, xbox or ps4):");
+        match input.to_lowercase().as_str() {
+            "pc" => platform = Platform::Pc,
+            "xbox" => platform = Platform::Xbox,
+            "ps4" => platform = Platform::Ps4,
+            _ => { println!("Invalid platform!"); continue; },
+        }
+
+        break
+    }
 
     println!("\n");
 

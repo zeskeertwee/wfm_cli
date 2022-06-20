@@ -3,7 +3,6 @@ use std::time::SystemTime;
 use anyhow::Result;
 use home;
 use crate::{
-    DATA_SCREENSHOT_DIR,
     DATA_PATH_SUFFIX,
     DATA_CONFIG_FILE,
 };
@@ -17,13 +16,6 @@ pub fn data_path() -> Result<PathBuf> {
     home_dir.push(DATA_PATH_SUFFIX);
 
     Ok(home_dir)
-}
-
-pub fn screenshot_path() -> Result<PathBuf> {
-    let mut data_path = data_path()?;
-    data_path.push(DATA_SCREENSHOT_DIR);
-
-    Ok(data_path)
 }
 
 pub fn config_path() -> Result<PathBuf> {

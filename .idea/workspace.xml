@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9b80761f-54b4-4830-83ba-fb184f1a1ef2" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/cli/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/src/config.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/config.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/src/ocr.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/src/util.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/util.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wfm_rs/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/wfm_rs/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wfm_rs/src/shared.rs" beforeDir="false" afterPath="$PROJECT_DIR$/wfm_rs/src/shared.rs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Rust File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="3nsldmzn" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="24xi6oZSy1RhRjZ4HPhKUEtqC47" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="cidr.known.project.marker" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.project.grazie" />
+  </component>
+  <component name="RustProjectSettings">
+    <option name="externalLinter" value="Clippy" />
+    <option name="runExternalLinterOnTheFly" value="true" />
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+    <option name="version" value="2" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9b80761f-54b4-4830-83ba-fb184f1a1ef2" name="Changes" comment="" />
+      <created>1644578465226</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1644578465226</updated>
+      <workItem from="1644578475351" duration="1167000" />
+      <workItem from="1644996115463" duration="20000" />
+      <workItem from="1655716834244" duration="141000" />
+      <workItem from="1655717012924" duration="178000" />
+      <workItem from="1655717195176" duration="3582000" />
+      <workItem from="1655721026075" duration="902000" />
+    </task>
+    <task id="LOCAL-00001" summary="add error popup">
+      <created>1644579599710</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1644579599711</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="add error popup" />
+    <option name="LAST_COMMIT_MESSAGE" value="add error popup" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
