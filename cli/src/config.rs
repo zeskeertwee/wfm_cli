@@ -1,7 +1,4 @@
-use crate::{
-    util::{config_path, data_path, unix_timestamp},
-    ITEMS_CACHE_EXPIRY_S,
-};
+use crate::{util::{config_path, data_path, unix_timestamp}, ITEMS_CACHE_EXPIRY_S, clear_terminal};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -102,6 +99,8 @@ async fn login_process() -> Result<(JwtToken, String)> {
         break
     }
 
+    clear_terminal();
+
     println!("\n");
 
     print!("Fetching token from API...   ");
@@ -111,7 +110,7 @@ async fn login_process() -> Result<(JwtToken, String)> {
     Ok((user._jwt_token(), user.username()))
 }
 
-fn prompt(text: &str) -> String {
+pub fn prompt(text: &str) -> String {
     println!("\n{}", text);
     text_io::read!("{}\n")
 }

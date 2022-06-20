@@ -33,3 +33,9 @@ pub fn unix_timestamp() -> Result<u64> {
 pub fn clear_terminal() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 }
+
+pub fn press_enter_prompt() {
+    println!("\n\nPress [Enter] to close the program");
+    let mut buf = String::new();
+    std::io::stdin().read_line(&mut buf);
+}

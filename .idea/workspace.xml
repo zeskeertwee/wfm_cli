@@ -10,14 +10,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9b80761f-54b4-4830-83ba-fb184f1a1ef2" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/cli/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cli/src/config.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/config.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cli/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cli/src/ocr.rs" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cli/src/util.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/util.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wfm_rs/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/wfm_rs/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wfm_rs/src/shared.rs" beforeDir="false" afterPath="$PROJECT_DIR$/wfm_rs/src/shared.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,17 +50,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="cf.first.check.clang-format" value="false" />
-    <property name="cidr.known.project.marker" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.project.grazie" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true"
+  }
+}]]></component>
   <component name="RustProjectSettings">
     <option name="externalLinter" value="Clippy" />
     <option name="runExternalLinterOnTheFly" value="true" />
@@ -85,6 +82,7 @@
       <workItem from="1655717012924" duration="178000" />
       <workItem from="1655717195176" duration="3582000" />
       <workItem from="1655721026075" duration="902000" />
+      <workItem from="1655736870847" duration="2942000" />
     </task>
     <task id="LOCAL-00001" summary="add error popup">
       <created>1644579599710</created>
