@@ -16,7 +16,7 @@ jobs:
         - name: Install dependencies
           run: sudo apt install libssl-dev -y
         - name: Build CLI
-          run: cargo build --release --verbose
+          run: cargo build --release
         - name: Upload CLI binary artifact
           uses: actions/upload-artifact@v3
           with:
@@ -29,7 +29,7 @@ jobs:
     steps:
         - uses: actions/checkout@v2
         - name: Build CLI
-          run: cargo build --release --verbose
+          run: cargo build --release
         - name: Upload CLI binary artifact
           uses: actions/upload-artifact@v3
           with:

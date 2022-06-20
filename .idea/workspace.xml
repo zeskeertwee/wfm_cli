@@ -9,9 +9,10 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9b80761f-54b4-4830-83ba-fb184f1a1ef2" name="Changes" comment="it works!">
-      <change afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
+    <list default="true" id="9b80761f-54b4-4830-83ba-fb184f1a1ef2" name="Changes" comment="add CI">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cli/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/cli/src/main.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +81,7 @@
       <workItem from="1655717012924" duration="178000" />
       <workItem from="1655717195176" duration="3582000" />
       <workItem from="1655721026075" duration="902000" />
-      <workItem from="1655736870847" duration="3407000" />
+      <workItem from="1655736870847" duration="4149000" />
     </task>
     <task id="LOCAL-00001" summary="add error popup">
       <created>1644579599710</created>
@@ -96,7 +97,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655739844893</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="add CI">
+      <created>1655740571255</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1655740571255</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -128,7 +136,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="add error popup" />
     <MESSAGE value="it works!" />
-    <option name="LAST_COMMIT_MESSAGE" value="it works!" />
+    <MESSAGE value="add CI" />
+    <option name="LAST_COMMIT_MESSAGE" value="add CI" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

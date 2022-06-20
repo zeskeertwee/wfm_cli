@@ -1,5 +1,3 @@
-#![feature(drain_filter)]
-
 use colored::*;
 use util::{clear_terminal, unix_timestamp};
 use config::prompt;
@@ -57,7 +55,18 @@ async fn main() {
 
     for sell_order in existing_orders.sell_orders {
         let mut item_orders = user.get_item_orders(&sell_order.item).await.unwrap();
-        item_orders.drain_filter(|v| v.user.status != "ingame" || v.order_type == OrderType::Buy);
+        //item_orders.drain_filter(|v| v.user.status != "ingame" || v.order_type == OrderType::Buy);
+        {
+            let mut i = 0;
+            while i < item_orders.len() {
+                if item_orders[i].user.status != "ingame" || item_orders[i].order_type == OrderType::Buy {
+                    item_orders.remove(i);
+                } else {
+                    i += 1;
+                }
+            }
+        }
+
         item_orders.sort_by(|a, b| a.platinum.partial_cmp(&b.platinum).unwrap());
         if item_orders[0].platinum < sell_order.platinum {
             let mut pos = (usize::MAX, usize::MAX);
