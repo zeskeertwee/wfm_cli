@@ -1,10 +1,7 @@
 use crate::response::ProfileOrderResponseWrapper;
 use crate::shared::OrderType;
 use crate::traits::OrderID;
-use crate::{
-    delete_endpoint, get_endpoint, post_endpoint, put_endpoint, request, response, traits,
-    Platform, BASE_URL,
-};
+use crate::{delete_endpoint, get_endpoint, post_endpoint, put_endpoint, request, response, traits, Platform, BASE_URL, get_endpoint_unauthorized};
 use anyhow::Result;
 use reqwest;
 use serde::{Deserialize, Serialize};
@@ -160,12 +157,12 @@ impl User {
         &self,
         order: &T,
     ) -> Result<response::RemoveOrderResponse> {
-        Ok(delete_endpoint::<response::RemoveOrderResponse>(
+        delete_endpoint::<response::RemoveOrderResponse>(
             &self.client,
             &format!("/profile/orders/{}", order.order_id()),
             &self.jwt_token,
         )
-        .await?)
+        .await
     }
 
     pub async fn update_order<T: OrderID>(
@@ -178,26 +175,36 @@ impl User {
             platinum: desc.platinum,
             quantity: desc.quantity,
             visible: desc.visible,
-            rank: desc.rank.clone(),
+            rank: desc.rank,
             subtype: desc.subtype.clone(),
         };
 
-        Ok(put_endpoint(
+        put_endpoint(
             &self.client,
             &format!("/profile/orders/{}", order.order_id()),
             &self.jwt_token,
             &body,
         )
-        .await?)
+        .await
     }
 
     pub async fn get_auctions(&self) -> Result<response::ProfileAuctions> {
-        Ok(get_endpoint(
+        get_endpoint(
             &self.client,
             &format!("/profile/{}/auctions", self.username),
             &self.jwt_token,
         )
-        .await?)
+        .await
+    }
+
+    pub async fn get_auctions_for_item(item_url: &str) -> Result<Vec<response::ProfileAuctions>> {
+        let client = reqwest::Client::new();
+
+        get_endpoint_unauthorized(
+            &client,
+            &format!("/auctions/search?type=riven&weapon_url_name={}", item_url),
+        )
+        .await
     }
 }
 

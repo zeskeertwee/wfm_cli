@@ -36,6 +36,26 @@ pub(crate) async fn get_endpoint<T: DeserializeOwned>(
     Ok(base.payload)
 }
 
+pub(crate) async fn get_endpoint_unauthorized<T: DeserializeOwned>(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<T> {
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert("Content-Type", "application/json".parse()?);
+
+    let raw = client
+        .get(format!("{}{}", BASE_URL, url))
+        .headers(headers)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    let base: response::ResponseWrapper<T> = serde_json::from_str(&raw)?;
+
+    Ok(base.payload)
+}
+
 pub(crate) async fn post_endpoint<T: DeserializeOwned, B: Serialize>(
     client: &reqwest::Client,
     url: &str,

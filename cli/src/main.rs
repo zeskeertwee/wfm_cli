@@ -9,6 +9,7 @@ use crate::util::press_enter_prompt;
 
 mod config;
 mod util;
+mod cheap_rivens;
 
 const DATA_PATH_SUFFIX: &str = ".wfm_cli/";
 const DATA_CONFIG_FILE: &str = "config.wfm.json";
@@ -46,6 +47,28 @@ enum OrderSolution {
 
 #[tokio::main]
 async fn main() {
+    if let Some(arg) = std::env::args().nth(1) {
+        if arg.to_lowercase() == "rscan" {
+            println!("[{}] Running riven scanner", "OK ".green());
+            let riven_type = match std::env::args().nth(2) {
+                Some(arg) => arg,
+                None => {
+                    println!("Please specify a riven type (melee/pistol/rifle/kitgun/zaw/shotgun/archgun)");
+                    return;
+                }
+            };
+
+            match cheap_rivens::run(&riven_type).await {
+                Ok(_) => {},
+                Err(e) => {
+                    println!("[{}] {}", "ERR".red(), e);
+                    std::process::exit(1);
+                }
+            }
+            return;
+        }
+    }
+
     let config = config::run().await.unwrap();
     let user = config.user();
 
