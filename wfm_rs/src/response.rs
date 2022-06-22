@@ -371,6 +371,30 @@ impl OrderID for RemoveOrderResponse {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+pub struct Auctions {
+    pub auctions: Vec<Auction>
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Auction {
+    pub id: String,
+    pub minimal_reputation: u32,
+    pub winner: Option<String>,
+    pub private: bool,
+    pub visible: bool,
+    pub note_raw: Option<String>,
+    pub note: Option<String>,
+    pub owner: OrderUser, // TODO: this has some more data but i don't care about it right now
+    pub starting_price: u32,
+    pub buyout_price: Option<u32>,
+    pub is_direct_sell: bool,
+    pub top_bid: Option<u32>,
+    pub platform: Platform,
+    pub closed: bool,
+    pub item: AuctionItem,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ProfileAuctions {
     pub auctions: Vec<ProfileAuction>,
 }

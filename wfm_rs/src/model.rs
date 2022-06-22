@@ -197,7 +197,7 @@ impl User {
         .await
     }
 
-    pub async fn get_auctions_for_item(item_url: &str) -> Result<Vec<response::ProfileAuctions>> {
+    pub async fn get_auctions_for_item(item_url: &str) -> Result<response::Auctions> {
         let client = reqwest::Client::new();
 
         get_endpoint_unauthorized(

@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Write;
@@ -6,6 +7,7 @@ use colored::Colorize;
 use leaky_bucket::RateLimiter;
 use crate::util::data_path;
 use serde::{Serialize, Deserialize};
+use wfm_rs::response::{Auction, Auctions};
 use crate::unix_timestamp;
 
 const WEEK_IN_SECONDS: u64 = 60 * 60 * 24 * 7;
@@ -30,6 +32,13 @@ struct RivenData {
     riven_type: RivenType,
     #[serde(rename(deserialize = "compatibility"))]
     weapon: Option<String>,
+}
+
+// TODO: optimize this to be smaller
+#[derive(Serialize, Deserialize, Clone)]
+struct RivenAuctionDataSet {
+    data: Vec<Auction>,
+    timestamp: u64,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq)]
@@ -93,17 +102,46 @@ pub async fn run(type_str: &str) -> anyhow::Result<()> {
 
     println!("[{}] Riven data loaded!", "OK ".green());
 
-    let mut ratelimiter = RateLimiter::builder()
-        .max(3)
-        .initial(0)
-        .refill(3)
-        .interval(Duration::from_secs(1))
-        .build();
+    let mut data: RivenAuctionDataSet;
 
-    let rivens_of_type = riven_data.data.iter().filter(|v| v.1 == &riven_type).count();
+    let mut path = data_path()?;
+    path.push(format!("{:?}_rivens.json", riven_type));
+    if let Ok(mut file) = fs::OpenOptions::new().read(true).write(true).open(&path) {
+        data = serde_json::from_reader(&file)?;
 
-    println!("{}", format!("\nNow the program will get riven auctions from warframe.market, this will take a while (est. {:.1}s)", rivens_of_type as f64 / 3.0).cyan());
-    //wfm_rs::model::User::get_auctions_for_item();
+        if unix_timestamp()? - data.timestamp > 300 {
+            println!("[{}] Not reloading auction data, less than 300s old!", "INF".cyan());
+        } else {
+            data = download_riven_auctions(&riven_data, &riven_type,&mut file).await?;
+        }
+    } else {
+        data = download_riven_auctions(&riven_data, &riven_type, &mut File::create(&path)?).await?;
+    }
+
+    println!("\n[{}] Got {} auctions", "OK ".green(), data.data.len());
+
+    println!("[{}] Analyzing auctions", "...".cyan());
+
+    data.data.iter_mut().map(|v| if let Some(top) = v.top_bid { v.starting_price = top }).for_each(drop);
+
+    data.data.sort_by(|a, b| match a.starting_price.cmp(&b.starting_price) {
+        Ordering::Equal => if a.is_direct_sell && !b.is_direct_sell { Ordering::Less } else { Ordering::Equal },
+        other => other,
+    });
+
+    let it: Vec<&Auction> = data.data.iter().filter(|v| v.owner.status == "ingame").collect();
+
+    println!();
+    for auction in it.iter().take(400).rev() {
+        let status_text = match auction.is_direct_sell {
+            true => "DIR".green(),
+            false => "AUC".yellow(),
+        };
+
+        println!("[{}] {:<30} | {:>3}p | https://warframe.market/auction/{}", status_text, auction.item.name.cyan(), auction.starting_price, auction.id);
+    }
+
+    crate::util::press_enter_prompt();
 
     Ok(())
 }
@@ -134,4 +172,42 @@ fn process_riven_data(data: &Vec<RivenData>) -> anyhow::Result<ProcessedRivenDat
         data: riven_data,
         timestamp: unix_timestamp()?,
     })
+}
+
+async fn download_riven_auctions(riven_data: &ProcessedRivenDataSet, riven_type: &RivenType, file: &mut File) -> anyhow::Result<RivenAuctionDataSet> {
+    let ratelimiter = RateLimiter::builder()
+        .max(3)
+        .initial(0)
+        .refill(1)
+        .interval(Duration::from_millis(400))
+        .build();
+
+    let rivens_of_type: Vec<String> = riven_data.data.iter().filter(|v| v.1 == riven_type).map(|v| v.0.to_owned()).collect();
+
+    println!("{}", format!("\nNow the program will get riven auctions from warframe.market, this will take a while (est. {:.1}s)", rivens_of_type.len() as f64 / 3.0).cyan());
+
+    let mut data = Vec::new();
+
+    for (idx, weapon) in rivens_of_type.iter().enumerate() {
+        ratelimiter.acquire_one().await;
+        match wfm_rs::model::User::get_auctions_for_item(weapon.to_lowercase().as_str()).await {
+            Ok(r) => {
+                for i in r.auctions {
+                    data.push(i);
+                }
+
+                println!("[{}] {:<30} ({:>3}/{:>3})", "OK ".green(), weapon.cyan(), idx + 1, rivens_of_type.len());
+            },
+            Err(e) => println!("[{}] Error getting {} riven auctions: {}", "ERR".red(), weapon.cyan(), e)
+        }
+    }
+
+    let r = RivenAuctionDataSet {
+        data,
+        timestamp: unix_timestamp()?,
+    };
+
+    file.write_all(serde_json::to_string(&r)?.as_bytes())?;
+
+    Ok(r)
 }
