@@ -89,8 +89,10 @@ pub async fn run(type_str: &str) -> anyhow::Result<()> {
     let mut riven_data: ProcessedRivenDataSet;
 
     if let Ok(mut riven_data_file) = fs::OpenOptions::new().read(true).write(true).open(&riven_data_file_path) {
-        riven_data = serde_json::from_reader(&mut riven_data_file)?;
+        let data: Vec<RivenData> = serde_json::from_reader(&mut riven_data_file)?;
+	riven_data = process_riven_data(&data)?;
 
+	println!("[{}] Parsed from file", "INF".cyan());
         if unix_timestamp()? - riven_data.timestamp > WEEK_IN_SECONDS {
             println!("[{}] Refreshing riven data", "...".cyan());
             riven_data = download_riven_data(&mut riven_data_file).await?;
@@ -106,8 +108,9 @@ pub async fn run(type_str: &str) -> anyhow::Result<()> {
 
     let mut path = data_path()?;
     path.push(format!("{:?}_rivens.json", riven_type));
-    if let Ok(mut file) = fs::OpenOptions::new().read(true).write(true).open(&path) {
-        data = serde_json::from_reader(&file)?;
+    if let Ok(mut file) = fs::OpenOptions::new().read(true).write(true).open(&path) { 
+       	println!("[{}] Loading auction data from file", "INF".cyan());
+	data = serde_json::from_reader(&file)?;
 
         if unix_timestamp()? - data.timestamp > 300 {
             println!("[{}] Not reloading auction data, less than 300s old!", "INF".cyan());
