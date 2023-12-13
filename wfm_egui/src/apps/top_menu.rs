@@ -1,9 +1,9 @@
 use eframe::egui::panel::TopBottomSide;
-use eframe::egui::{CtxRef, TopBottomPanel};
+use eframe::egui::{Color32, CtxRef, TopBottomPanel};
 
 use wfm_rs::response::ExistingProfileOrders;
 
-use crate::app::App;
+use crate::app::{App, Notification, WFM_NOTIFICATIONS_KEY};
 use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
 
 pub fn draw_top_menu_bar(app: &App, ctx: &CtxRef) {
@@ -48,5 +48,23 @@ pub fn draw_top_menu_bar(app: &App, ctx: &CtxRef) {
                 });
             })
         })
+    });
+
+    TopBottomPanel::new(TopBottomSide::Bottom, "bot_menu_bar").show(ctx, |ui| {
+        let notification = app.get_from_storage(WFM_NOTIFICATIONS_KEY, |v: Option<&Vec<Notification>>| {
+            match v {
+                Some(v) => v.last().cloned(),
+                None => None
+            }
+        });
+
+        match notification {
+            Some(v) => { ui.horizontal(|ui| {
+                ui.colored_label(Color32::LIGHT_BLUE, format!("[{}]", v.source));
+                ui.add_space(5.0);
+                ui.label(&v.message);
+            }); },
+            None => { ui.label("No notifications!"); },
+        }
     });
 }

@@ -7,7 +7,7 @@ use crossbeam_channel::{unbounded, Receiver, Sender};
 use eframe::egui::{CtxRef, Id, Rgba, TextureId, Window};
 use eframe::epi::{Frame, Storage};
 use eframe::{egui, epi};
-use log::{info, trace, warn};
+use log::{error, info, trace, warn};
 use parking_lot::Mutex;
 
 use wfm_rs::User;
@@ -26,6 +26,7 @@ const IMAGE_PLACEHOLDER_PNG: &[u8] = include_bytes!("../placeholder_texture.png"
 pub(crate) const WFM_MANIFEST_KEY: &str = "wfm_manifest";
 pub(crate) const WFM_MANIFEST_PENDING_KEY: &str = "wfm_manifest_pending";
 pub(crate) const WFM_USER_KEY: &str = "wfm_user";
+pub(crate) const WFM_NOTIFICATIONS_KEY: &str = "__wfm_notifications";
 const WFM_MANIFEST_EXPIRATION_SECONDS: u64 = 60 * 60 * 24;
 
 pub trait AppWindow: Send + 'static {
@@ -43,6 +44,23 @@ pub trait AppWindow: Send + 'static {
 
 const JTW_TOKEN_KEY: &str = "wfm_rs_jwt_token";
 const USERNAME_KEY: &str = "wfm_rs_username";
+
+#[derive(Clone)]
+pub struct Notification {
+    pub timestamp: Instant,
+    pub source: String,
+    pub message: String,
+}
+
+impl Notification {
+    pub fn new<T: ToString, U: ToString>(source: T, message: U) -> Notification {
+        Self {
+            timestamp: Instant::now(),
+            source: source.to_string(),
+            message: message.to_string()
+        }
+    }
+}
 
 pub struct App {
     id_counter: AtomicU64,
@@ -78,6 +96,21 @@ impl Default for App {
 }
 
 impl App {
+    pub fn submit_notification(&self, notification: Notification) {
+        if !self.present_in_storage(WFM_NOTIFICATIONS_KEY) {
+            self.insert_into_storage(WFM_NOTIFICATIONS_KEY, vec![notification]);
+            info!("Initialized notification storage");
+            return;
+        }
+
+        self.get_from_storage_mut(WFM_NOTIFICATIONS_KEY, |v: Option<&mut Vec<Notification>>| {
+            match v {
+                Some(mut v) => v.push(notification),
+                None => error!("Notification storage not initialized!"),
+            }
+        })
+    }
+
     pub fn submit_job<T: Job>(&self, mut job: T) -> anyhow::Result<()> {
         let name = job.job_name();
         match job.on_submit(&self) {
@@ -160,6 +193,17 @@ impl App {
     ) -> R {
         match self.storage.lock().get(key) {
             Some(value) => func(value.downcast_ref::<T>()),
+            None => func(None),
+        }
+    }
+
+    pub fn get_from_storage_mut<T: 'static, F: FnOnce(Option<&mut T>) -> R, R>(
+        &self,
+        key: &str,
+        func: F,
+    ) -> R {
+        match self.storage.lock().get_mut(key) {
+            Some(mut value) => func(value.downcast_mut::<T>()),
             None => func(None),
         }
     }
@@ -274,7 +318,8 @@ impl epi::App for App {
 
         self.run_background_jobs();
 
-        self.queue_window_spawn(crate::apps::test::TestApp {})
+        self.queue_window_spawn(crate::apps::test::TestApp {});
+        self.submit_notification(Notification::new("WIM", "Application initialized"));
     }
 
     fn update(&mut self, ctx: &CtxRef, _frame: &Frame) {

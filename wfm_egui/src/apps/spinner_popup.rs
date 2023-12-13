@@ -6,7 +6,7 @@ use eframe::egui::{CtxRef, Ui};
 use eguikit::spinner::Style;
 use eguikit::Spinner;
 
-use crate::app::{App, AppWindow};
+use crate::app::{App, AppWindow, Notification};
 
 pub struct SpinnerPopup {
     pending_storage_key: String,
