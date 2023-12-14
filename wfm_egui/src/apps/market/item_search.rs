@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::cmp::{max, min};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Instant;
@@ -18,6 +18,7 @@ use wfm_rs::response::ShortItem;
 use wfm_rs::shared::OrderType;
 
 use crate::app::{App, AppEvent, AppWindow, WFM_MANIFEST_KEY};
+use crate::apps::inventory::{Inventory, INVENTORY_KEY};
 use crate::apps::market::place_order::PlaceOrderPopup;
 use crate::background_jobs::wfm_manifest::WarframeMarketManifest;
 use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
@@ -103,7 +104,7 @@ impl ItemSearchApp {
 
         Grid::new("closest_item_grid")
             .striped(true)
-            .num_columns(3)
+            .num_columns(4)
             .show(ui, |ui| {
                 for item in self.closest_items.lock().iter() {
                     ui.label(&item.item_name);
@@ -134,6 +135,12 @@ impl ItemSearchApp {
                         .clicked()
                     {
                         app.queue_window_spawn(PlaceOrderPopup::new(item.clone(), OrderType::Buy));
+                    }
+
+                    if ui.button("Add to inventory").clicked() {
+                        app.get_from_storage::<Inventory, _, _>(INVENTORY_KEY, |i| {
+                            i.unwrap().insert_item(item.clone(), 1);
+                        })
                     }
 
                     ui.end_row();
@@ -186,7 +193,7 @@ impl Job for FindClosestItemsJob {
             let keyword_score = get_keyword_score(&search_text_keywords, &keywords);
 
             distances.push((
-                (distance as f64 - (distance as f64 * keyword_score)) as i64,
+                max((distance as f64 - (distance as f64 * keyword_score)) as i64, 0),
                 idx,
             ));
         }

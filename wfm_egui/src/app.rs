@@ -13,6 +13,7 @@ use parking_lot::Mutex;
 use wfm_rs::User;
 
 use crate::apps::authenticate::WarframeMarketAuthenticationWindow;
+use crate::apps::inventory::{Inventory, INVENTORY_KEY};
 use crate::background_jobs::wfm_manifest::{WarframeMarketManifest, WarframeMarketManifestLoadJob};
 use crate::background_jobs::wfm_profile_orders::{
     FetchExistingProfileOrdersJob, WFM_EXISTING_PROFILE_ORDERS_EXPIRATION_SECONDS,
@@ -316,9 +317,14 @@ impl epi::App for App {
             }
         }
 
+        if !self.present_in_storage(INVENTORY_KEY) {
+            self.insert_into_storage(INVENTORY_KEY, Inventory::load_from_storage(storage));
+        }
+
         self.run_background_jobs();
 
         self.queue_window_spawn(crate::apps::test::TestApp {});
+        self.queue_window_spawn(crate::apps::inventory::InventoryApp {search_field: String::new()});
         self.submit_notification(Notification::new("WIM", "Application initialized"));
     }
 
@@ -380,6 +386,13 @@ impl epi::App for App {
                 None => warn!("No manifest to save to storage!"),
             }
         });
+
+        self.get_from_storage::<Inventory, _, _>(INVENTORY_KEY, |i| {
+            match i {
+                Some(i) => i.save_to_storage(storage),
+                None => warn!("No inventory to save to storage!"),
+            }
+        });
     }
 
     fn clear_color(&self) -> Rgba {
@@ -388,7 +401,7 @@ impl epi::App for App {
 }
 
 pub enum AppEvent {
-    QueueWindowSpawn(Box<dyn AppWindow>),
-    InsertIntoStorage(String, Box<dyn Any + Send + 'static>),
+    QueueWindowSpawn(Box<dyn AppWindow + Sync>),
+    InsertIntoStorage(String, Box<dyn Any + Send + Sync + 'static>),
     RemoveFromStorage(String),
 }

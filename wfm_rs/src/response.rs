@@ -53,7 +53,7 @@ pub struct Items {
     pub items: Vec<ShortItem>,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Eq)]
 pub struct ShortItem {
     pub url_name: String,
     pub thumb: String,
