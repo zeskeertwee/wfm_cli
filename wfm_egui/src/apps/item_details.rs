@@ -1,6 +1,7 @@
 use anyhow::bail;
 use crossbeam_channel::Sender;
-use eframe::egui::{CtxRef, Ui};
+use eframe::egui::{Color32, CtxRef, Ui};
+use eframe::egui::RichText;
 use eguikit::Spinner;
 use eguikit::spinner::Style;
 use log::trace;
@@ -49,13 +50,47 @@ impl AppWindow for ItemDetailsApp {
     }
 
     fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut Ui) {
+        if self.market_stats.is_none() {
+            if app.present_in_storage(&get_market_statistics_storage_key(&self.item)) {
+                self.market_stats = app.get_from_storage::<MarketStatisticsWrapper, _, _>(&get_market_statistics_storage_key(&self.item), |v| {
+                    Some(v.unwrap().clone())
+                });
+            } else {
+                ui.add_space(50.0);
+                ui.vertical_centered(|ui| {
+                    ui.add(Spinner::default().style(Style::Dots));
+                    ui.add_space(5.0);
+                    ui.label("Loading market statistics");
+                });
+                ui.add_space(50.0);
+                return;
+            }
+        }
+
         ui.horizontal(|ui| {
             match &self.image {
                 Some(v) => ui.image(*v.texture_id(), [100.0, 100.0]),
                 None => ui.add(Spinner::default().style(Style::Dots)),
-            }
+            };
+
+            let stats = self.market_stats.as_ref().unwrap();
+            let statslast48 = stats.statistics_live._48_hours.last().unwrap();
+
+            ui.vertical(|ui| {
+                display_property(ui, "name", &self.item.item_name);
+                display_property(ui, "48h median", &format!("{:.1} platinum", statslast48.median));
+                display_property(ui, "48h average", &format!("{:.1} platinum", statslast48.avg_price))
+            });
         });
     }
+}
+
+fn display_property(ui: &mut Ui, name: &str, value: &str) {
+    ui.horizontal(|ui| {
+        ui.label(RichText::new(name).italics().weak());
+        ui.add_space(5.0);
+        ui.label(value);
+    });
 }
 
 pub struct GetMarketStatisticsJob {

@@ -11,6 +11,7 @@ use log::{error, info, trace, warn};
 use parking_lot::Mutex;
 
 use wfm_rs::User;
+use wfm_rs::websocket::WebsocketMessagePayload;
 
 use crate::apps::authenticate::WarframeMarketAuthenticationWindow;
 use crate::apps::inventory::{Inventory, INVENTORY_KEY};
@@ -28,6 +29,7 @@ pub(crate) const WFM_MANIFEST_KEY: &str = "wfm_manifest";
 pub(crate) const WFM_MANIFEST_PENDING_KEY: &str = "wfm_manifest_pending";
 pub(crate) const WFM_USER_KEY: &str = "wfm_user";
 pub(crate) const WFM_NOTIFICATIONS_KEY: &str = "__wfm_notifications";
+pub(crate) const WFM_WS_EVENTS_KEY: &str = "__wfm_websocket_events";
 const WFM_MANIFEST_EXPIRATION_SECONDS: u64 = 60 * 60 * 24;
 
 pub trait AppWindow: Send + 'static {
@@ -65,6 +67,8 @@ impl Notification {
 
 pub struct App {
     id_counter: AtomicU64,
+    ws_rx: Receiver<WebsocketMessagePayload>,
+    ws_tx: Sender<WebsocketMessagePayload>,
     rx: Receiver<AppEvent>,
     tx: Sender<AppEvent>,
     spawn_queue: Mutex<Vec<Box<dyn AppWindow>>>,
@@ -79,12 +83,13 @@ pub struct App {
 impl Default for App {
     fn default() -> Self {
         let (tx, rx) = unbounded();
+        let (ws_tx, ws_rx) = unbounded();
         let tx_clone = tx.clone();
 
         Self {
             id_counter: AtomicU64::new(0),
-            rx,
-            tx,
+            rx, tx,
+            ws_rx, ws_tx,
             spawn_queue: Mutex::new(Vec::new()),
             app_windows: Mutex::new(AHashMap::new()),
             worker_pool: Mutex::new(WorkerPool::new(tx_clone)),
@@ -167,6 +172,24 @@ impl App {
                     panic!("app event channel disconnected");
                 }
             }
+        }
+
+        if self.present_in_storage(WFM_WS_EVENTS_KEY) {
+            self.remove_from_storage(WFM_WS_EVENTS_KEY);
+        }
+
+        let mut ws_events = Vec::new();
+        loop {
+            match self.ws_rx.try_recv() {
+                Ok(v) => {
+                    ws_events.push(v);
+                },
+                Err(_) => break,
+            }
+        }
+
+        if !ws_events.is_empty() {
+            self.insert_into_storage(WFM_WS_EVENTS_KEY, ws_events);
         }
     }
 
@@ -326,6 +349,9 @@ impl epi::App for App {
         self.queue_window_spawn(crate::apps::test::TestApp {});
         self.queue_window_spawn(crate::apps::inventory::InventoryApp {search_field: String::new()});
         self.submit_notification(Notification::new("WIM", "Application initialized"));
+
+        let ws_tx = self.ws_tx.clone();
+        self.with_user(|v| crate::background_jobs::websocket_listener::start(v.unwrap().to_owned(), ws_tx));
     }
 
     fn update(&mut self, ctx: &CtxRef, _frame: &Frame) {

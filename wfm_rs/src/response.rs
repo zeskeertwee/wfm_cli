@@ -170,14 +170,16 @@ impl OrderID for Order {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct OrderUser {
     pub reputation: u16,
     pub region: String,
     pub ingame_name: String,
     pub status: String,
     pub id: String,
-    // missing: avatar, last_seen
+    pub avatar: Option<String>,
+    // TODO: parse to timestamp
+    pub last_seen: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
@@ -289,7 +291,7 @@ impl ItemID for ProfileOrderItem {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct ShortItemLocale {
     pub item_name: String,
 }
@@ -321,7 +323,7 @@ impl OrderID for ExistingProfileOrder {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct ExistingProfileOrderItem {
     pub quantity_for_set: Option<u16>,
     pub ducats: Option<u16>,
@@ -329,7 +331,7 @@ pub struct ExistingProfileOrderItem {
     pub url_name: String,
     pub icon: String,
     pub thumb: String,
-    pub icon_format: String,
+    pub icon_format: Option<String>,
     pub tags: Vec<String>,
     pub sub_icon: Option<String>,
     pub en: ShortItemLocale,

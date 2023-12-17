@@ -8,6 +8,7 @@ pub mod request;
 pub mod response;
 pub mod shared;
 pub mod traits;
+pub mod websocket;
 
 pub use model::User;
 pub use shared::Platform;
