@@ -290,8 +290,10 @@ impl App {
         }
     }
 
-    fn setup(&mut self, storage: Option<&dyn Storage>) {
-        info!("Spawning 1 worker thread");
+    fn setup(&mut self, ctx: &Context, storage: Option<&dyn Storage>) {
+        egui_extras::install_image_loaders(ctx);
+
+	info!("Spawning 1 worker thread");
         self.worker_pool.lock().spawn_worker().unwrap();
 
         let storage = storage.unwrap();
@@ -337,7 +339,7 @@ impl App {
 impl eframe::App for App {
     fn update(&mut self, ctx: &Context, frame: &mut Frame) {
         if ctx.frame_nr() == 0 {
-            self.setup(frame.storage());
+            self.setup(ctx, frame.storage());
         }
 
         self.process_events();

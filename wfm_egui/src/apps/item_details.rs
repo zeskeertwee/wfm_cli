@@ -11,6 +11,8 @@ use wfm_rs::User;
 use crate::app::{App, AppEvent, AppWindow};
 use crate::worker::Job;
 
+pub const WFM_STATIC_PREFIX: &'static str = "https://warframe.market/static/assets/";
+
 pub struct ItemDetailsApp {
     pub item: ShortItem,
     pub market_stats: Option<MarketStatisticsWrapper>,
@@ -62,8 +64,9 @@ impl AppWindow for ItemDetailsApp {
         }
 
         ui.horizontal(|ui| {
-            ui.add(Image::new(ImageSource::Uri(self.item.thumb.clone().into()))
-                .show_loading_spinner(true));
+            ui.add(Image::new(ImageSource::Uri(format!("{}{}", WFM_STATIC_PREFIX, self.item.thumb).into()))
+                .show_loading_spinner(true)
+                .fit_to_exact_size([128.0, 128.0].into()));
 
             let stats = self.market_stats.as_ref().unwrap();
             let statslast48 = stats.statistics_live._48_hours.last().unwrap();

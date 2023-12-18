@@ -9,6 +9,7 @@ use crossbeam_channel::Sender;
 use eframe::egui::panel::TopBottomSide;
 use eframe::egui::widgets::Button;
 use eframe::egui::{Context, Grid, Rgba, RichText, TextEdit, TopBottomPanel, Ui};
+use egui_extras::{Column, TableBuilder};
 use levenshtein::levenshtein;
 use parking_lot::Mutex;
 use tokio::runtime::Runtime;
@@ -102,49 +103,68 @@ impl ItemSearchApp {
                 },
             );
 
-        Grid::new("closest_item_grid")
+        TableBuilder::new(ui)
             .striped(true)
-            .num_columns(4)
-            .show(ui, |ui| {
-                for item in self.closest_items.lock().iter() {
-                    ui.label(&item.item_name);
+            .resizable(true)
+            .columns(Column::remainder(), 4)
+            .min_scrolled_height(0.0)
+            .header(10.0, |mut header| {
+                header.col(|ui| {
+                    ui.label("Item");
+                });
+                header.col(|ui| ui.add_space(10.0));
+                header.col(|ui| ui.add_space(10.0));
+                header.col(|ui| ui.add_space(10.0));
+            })
+            .body(|mut body| {
+                let lock = self.closest_items.lock();
 
-                    if ui
-                        .add(
-                            Button::new(RichText::new("SELL").monospace().color(Rgba::from_rgb(
-                                27.0 / 255.0,
-                                177.0 / 255.0,
-                                148.0 / 255.0,
-                            )))
-                            .frame(false),
-                        )
-                        .clicked()
-                    {
-                        app.queue_window_spawn(PlaceOrderPopup::new(item.clone(), OrderType::Sell));
-                    }
+                body.rows(20.0, min(15, lock.len()), |idx, mut row| {
+                    let item = &lock[idx];
 
-                    if ui
-                        .add(
-                            Button::new(RichText::new("BUY ").monospace().color(Rgba::from_rgb(
-                                60.0 / 255.0,
-                                135.0 / 255.0,
-                                156.0 / 255.0,
-                            )))
-                            .frame(false),
-                        )
-                        .clicked()
-                    {
-                        app.queue_window_spawn(PlaceOrderPopup::new(item.clone(), OrderType::Buy));
-                    }
+                    row.col(|ui| {
+                        ui.label(&item.item_name);
+                    });
+                    row.col(|ui| {
+                        if ui
+                            .add(
+                                Button::new(RichText::new("SELL").monospace().color(Rgba::from_rgb(
+                                    27.0 / 255.0,
+                                    177.0 / 255.0,
+                                    148.0 / 255.0,
+                                )))
+                                    .frame(false),
+                            )
+                            .clicked()
+                        {
+                            app.queue_window_spawn(PlaceOrderPopup::new(item.clone(), OrderType::Sell));
+                        }
+                    });
 
-                    if ui.button("Add to inventory").clicked() {
-                        app.get_from_storage::<Inventory, _, _>(INVENTORY_KEY, |i| {
-                            i.unwrap().insert_item(item.clone(), 1);
-                        })
-                    }
+                    row.col(|ui| {
+                        if ui
+                            .add(
+                                Button::new(RichText::new("BUY ").monospace().color(Rgba::from_rgb(
+                                    60.0 / 255.0,
+                                    135.0 / 255.0,
+                                    156.0 / 255.0,
+                                )))
+                                    .frame(false),
+                            )
+                            .clicked()
+                        {
+                            app.queue_window_spawn(PlaceOrderPopup::new(item.clone(), OrderType::Buy));
+                        }
+                    });
 
-                    ui.end_row();
-                }
+                    row.col(|ui| {
+                        if ui.button("Add to inventory").clicked() {
+                            app.get_from_storage::<Inventory, _, _>(INVENTORY_KEY, |i| {
+                                i.unwrap().insert_item(item.clone(), 1);
+                            })
+                        }
+                    });
+                });
             });
     }
 }
@@ -182,30 +202,13 @@ const KEYWORDS: [&'static str; 14] = [
 impl Job for FindClosestItemsJob {
     fn run(&mut self, _rt: &Runtime, tx: &Sender<AppEvent>) -> anyhow::Result<()> {
         let start = Instant::now();
-        let search_text_keywords = get_keywords_for_string(&self.search_text);
 
-        // lehvenstein distance, item idx
-        let mut distances: Vec<(i64, usize)> = Vec::with_capacity(self.manifest.items.len());
 
-        for (idx, item) in self.manifest.items.iter().enumerate() {
-            let distance = levenshtein(&self.search_text, &item.item_name);
-            let keywords = get_keywords_for_string(&item.item_name);
-            let keyword_score = get_keyword_score(&search_text_keywords, &keywords);
+        *self.closest_items.lock() = self.manifest.items.iter()
+            .filter(|v| v.item_name.contains(&self.search_text))
+            .map(|v| v.to_owned())
+            .collect();
 
-            distances.push((
-                max((distance as f64 - (distance as f64 * keyword_score)) as i64, 0),
-                idx,
-            ));
-        }
-
-        distances.sort_unstable();
-
-        let mut closest_items = Vec::with_capacity(15);
-        for i in 0..15 {
-            closest_items.push(self.manifest.items[distances[i].1].clone());
-        }
-
-        *self.closest_items.lock() = closest_items;
         self.search_duration_ms.store(
             start.elapsed().as_secs_f64() as f64 * 1000.0,
             Ordering::Relaxed,
