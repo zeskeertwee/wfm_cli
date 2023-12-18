@@ -205,7 +205,7 @@ impl Job for FindClosestItemsJob {
 
 
         *self.closest_items.lock() = self.manifest.items.iter()
-            .filter(|v| v.item_name.contains(&self.search_text))
+            .filter(|v| v.item_name.to_lowercase().contains(&self.search_text))
             .map(|v| v.to_owned())
             .collect();
 
