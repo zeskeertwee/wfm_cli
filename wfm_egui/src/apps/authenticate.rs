@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crossbeam_channel::Sender;
-use eframe::egui::{ComboBox, CtxRef, TextEdit, Ui};
+use eframe::egui::{ComboBox, Context, TextEdit, Ui};
 use eguikit::spinner::Style;
 use eguikit::Spinner;
 use log::info;
@@ -42,7 +42,7 @@ impl AppWindow for WarframeMarketAuthenticationWindow {
         "Warframe.market authentication".to_string()
     }
 
-    fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, app: &App, _ctx: &Context, ui: &mut Ui) {
         if self.auth_success {
             return;
         }

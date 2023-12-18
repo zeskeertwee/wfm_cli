@@ -1,6 +1,6 @@
 use anyhow::bail;
 use crossbeam_channel::Sender;
-use eframe::egui::{CtxRef, Ui};
+use eframe::egui::{Context, Image, ImageSource, Ui};
 use eguikit::Spinner;
 use eguikit::spinner::Style;
 use log::trace;
@@ -8,13 +8,11 @@ use tokio::runtime::Runtime;
 use wfm_rs::response::{MarketStatisticsWrapper, ShortItem};
 use wfm_rs::User;
 use crate::app::{App, AppEvent, AppWindow};
-use crate::texture::{load_texture, Texture, TextureSource};
 use crate::worker::Job;
 
 pub struct ItemDetailsApp {
     pub item: ShortItem,
     pub market_stats: Option<MarketStatisticsWrapper>,
-    pub image: Option<Texture>
 }
 
 impl ItemDetailsApp {
@@ -22,7 +20,6 @@ impl ItemDetailsApp {
         Self {
             item,
             market_stats: None,
-            image: None
         }
     }
 }
@@ -34,10 +31,7 @@ impl AppWindow for ItemDetailsApp {
         app.submit_job(GetMarketStatisticsJob {
             item: self.item.clone(),
             user
-        });
-
-        let texture_src = TextureSource::Url(self.item.thumb.clone());
-        let tex = load_texture(texture_src);
+        }).unwrap();
     }
 
     fn show_close_button(&self) -> bool {
@@ -48,12 +42,10 @@ impl AppWindow for ItemDetailsApp {
         format!("Details for {}", self.item.item_name)
     }
 
-    fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, app: &App, ctx: &Context, ui: &mut Ui) {
         ui.horizontal(|ui| {
-            match &self.image {
-                Some(v) => ui.image(*v.texture_id(), [100.0, 100.0]),
-                None => ui.add(Spinner::default().style(Style::Dots)),
-            }
+            ui.add(Image::new(ImageSource::Uri(self.item.thumb.clone().into()))
+                .show_loading_spinner(true));
         });
     }
 }

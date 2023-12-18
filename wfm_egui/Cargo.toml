@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-eframe = { version = "0.16.0", features = ["persistence"] }
+eframe = { version = "0.24.1", features = ["persistence"] }
 wfm_rs = { path = "../wfm_rs" }
 anyhow = "1.0.53"
 parking_lot = "0.12.0"
@@ -23,8 +23,8 @@ serde = { version = "1.0.136", features = ["derive"] }
 levenshtein = "1.0.5"
 atomic_float = "0.1.0"
 serde_with = "3.4.0"
+egui_plot = "0.24.1"
 
 [dependencies.eguikit]
-#git = "https://github.com/sagebind/eguikit"
-#rev = "ccffbd3f79f22e0a62ab18cb1e4c60d3893497d8"
-path = "../../eguikit"
+git = "https://github.com/zeskeertwee/eguikit"
+rev = "37c0667f2d63514f69c440d297e397c625c64cbf"

@@ -1,4 +1,4 @@
-use eframe::egui::{CtxRef, Ui};
+use eframe::egui::{Context, Ui};
 
 use crate::app::{App, AppWindow};
 
@@ -9,7 +9,7 @@ impl AppWindow for TestApp {
         "Test window".to_string()
     }
 
-    fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
-        ui.image(app.placeholder_image(), (256.0, 256.0));
+    fn update(&mut self, app: &App, _ctx: &Context, ui: &mut Ui) {
+        ui.label("It's pretty empty here...");
     }
 }

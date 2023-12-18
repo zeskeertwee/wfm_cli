@@ -4,9 +4,9 @@ use std::time::{Duration, Instant, SystemTime};
 
 use ahash::AHashMap;
 use crossbeam_channel::{unbounded, Receiver, Sender};
-use eframe::egui::{CtxRef, Id, Rgba, TextureId, Window};
-use eframe::epi::{Frame, Storage};
-use eframe::{egui, epi};
+use eframe::egui::{Context, Id, Rgba, TextureId, Visuals, Window};
+use eframe::{Frame, Storage};
+use eframe::egui;
 use log::{error, info, trace, warn};
 use parking_lot::Mutex;
 
@@ -19,7 +19,6 @@ use crate::background_jobs::wfm_profile_orders::{
     FetchExistingProfileOrdersJob, WFM_EXISTING_PROFILE_ORDERS_EXPIRATION_SECONDS,
     WFM_EXISTING_PROFILE_ORDERS_KEY, WFM_EXISTING_PROFILE_ORDERS_TIMESTAMP_KEY,
 };
-use crate::texture::TextureSource;
 use crate::util::clone_option_with_inner_ref;
 use crate::worker::{Job, WorkerPool};
 
@@ -32,7 +31,7 @@ const WFM_MANIFEST_EXPIRATION_SECONDS: u64 = 60 * 60 * 24;
 
 pub trait AppWindow: Send + 'static {
     fn window_title(&self) -> String;
-    fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut egui::Ui);
+    fn update(&mut self, app: &App, ctx: &Context, ui: &mut egui::Ui);
 
     fn init(&mut self, app: &App) {}
     fn should_close(&self, app: &App) -> bool {
@@ -70,7 +69,6 @@ pub struct App {
     spawn_queue: Mutex<Vec<Box<dyn AppWindow>>>,
     app_windows: Mutex<AHashMap<u64, (Box<dyn AppWindow>, bool)>>,
     worker_pool: Mutex<WorkerPool>,
-    placeholder_texture: Option<egui::TextureId>,
     textures: Mutex<AHashMap<String, egui::TextureId>>,
     storage: Mutex<AHashMap<String, Box<dyn Any>>>,
     last_background_tasks_update: Instant,
@@ -88,7 +86,6 @@ impl Default for App {
             spawn_queue: Mutex::new(Vec::new()),
             app_windows: Mutex::new(AHashMap::new()),
             worker_pool: Mutex::new(WorkerPool::new(tx_clone)),
-            placeholder_texture: None,
             textures: Mutex::new(AHashMap::new()),
             storage: Mutex::new(AHashMap::new()),
             last_background_tasks_update: Instant::now(),
@@ -167,13 +164,6 @@ impl App {
                     panic!("app event channel disconnected");
                 }
             }
-        }
-    }
-
-    pub fn placeholder_image(&self) -> TextureId {
-        match self.placeholder_texture {
-            Some(texture) => texture,
-            None => panic!("Placeholder texture not loaded"),
         }
     }
 
@@ -276,14 +266,8 @@ impl App {
             }
         }
     }
-}
 
-impl epi::App for App {
-    fn name(&self) -> &str {
-        "WIM - Warframe Inventory Manager"
-    }
-
-    fn setup(&mut self, _ctx: &CtxRef, frame: &Frame, storage: Option<&dyn Storage>) {
+    fn setup(&mut self, storage: Option<&dyn Storage>) {
         info!("Spawning 1 worker thread");
         self.worker_pool.lock().spawn_worker().unwrap();
 
@@ -299,11 +283,6 @@ impl epi::App for App {
             info!("No user found in persistent storage");
             self.queue_window_spawn(WarframeMarketAuthenticationWindow::default());
         }
-
-        let placeholder_source =
-            pollster::block_on(TextureSource::Data(IMAGE_PLACEHOLDER_PNG.to_owned()).load())
-                .unwrap();
-        self.placeholder_texture = Some(placeholder_source.allocate(frame).texture_id().to_owned());
 
         if let Some(manifest) = storage.get_string(WFM_MANIFEST_KEY) {
             match serde_json::from_str::<WarframeMarketManifest>(&manifest) {
@@ -327,8 +306,14 @@ impl epi::App for App {
         self.queue_window_spawn(crate::apps::inventory::InventoryApp {search_field: String::new()});
         self.submit_notification(Notification::new("WIM", "Application initialized"));
     }
+}
 
-    fn update(&mut self, ctx: &CtxRef, _frame: &Frame) {
+impl eframe::App for App {
+    fn update(&mut self, ctx: &Context, frame: &mut Frame) {
+        if ctx.frame_nr() == 0 {
+            self.setup(frame.storage());
+        }
+
         self.process_events();
         for window in self.spawn_queue.lock().drain(..) {
             self.spawn_window(window);
@@ -395,8 +380,8 @@ impl epi::App for App {
         });
     }
 
-    fn clear_color(&self) -> Rgba {
-        Rgba::from_rgb(15.0 / 255.0, 15.0 / 255.0, 15.0 / 255.0)
+    fn clear_color(&self, _visuals: &Visuals) -> [f32; 4] {
+        [15.0 / 255.0, 15.0 / 255.0, 15.0 / 255.0, 1.0]
     }
 }
 

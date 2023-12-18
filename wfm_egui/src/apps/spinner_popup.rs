@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use std::time::Instant;
 
-use eframe::egui::{CtxRef, Ui};
+use eframe::egui::{Context, Ui};
 use eguikit::spinner::Style;
 use eguikit::Spinner;
 
@@ -26,7 +26,7 @@ impl AppWindow for SpinnerPopup {
         false
     }
 
-    fn update(&mut self, _app: &App, _ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, _app: &App, _ctx: &Context, ui: &mut Ui) {
         ui.add_space(50.0);
         ui.vertical_centered(|ui| {
             ui.label(match self.show_finished_text.load(Ordering::Relaxed) {

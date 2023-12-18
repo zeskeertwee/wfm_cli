@@ -1,4 +1,4 @@
-use eframe::egui::{CtxRef, Rgba, RichText, Ui};
+use eframe::egui::{Context, Rgba, RichText, Ui};
 use crate::app::{App, AppWindow};
 
 pub struct ErrorPopup {
@@ -26,7 +26,7 @@ impl AppWindow for ErrorPopup {
         true
     }
 
-    fn update(&mut self, _app: &App, _ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, _app: &App, _ctx: &Context, ui: &mut Ui) {
         ui.add_space(25.0);
         ui.label(RichText::new("!  Error:").color(Rgba::from_rgb(229.0 / 255.0, 39.0 / 255.0, 21.0 / 255.0)).monospace());
         ui.horizontal(|ui| {

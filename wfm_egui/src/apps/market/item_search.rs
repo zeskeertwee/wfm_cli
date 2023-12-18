@@ -8,7 +8,7 @@ use atomic_float::AtomicF64;
 use crossbeam_channel::Sender;
 use eframe::egui::panel::TopBottomSide;
 use eframe::egui::widgets::Button;
-use eframe::egui::{CtxRef, Grid, Rgba, RichText, TextEdit, TopBottomPanel, Ui};
+use eframe::egui::{Context, Grid, Rgba, RichText, TextEdit, TopBottomPanel, Ui};
 use levenshtein::levenshtein;
 use parking_lot::Mutex;
 use tokio::runtime::Runtime;
@@ -39,7 +39,7 @@ impl AppWindow for ItemSearchApp {
         "Warframe.market item search".to_string()
     }
 
-    fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, app: &App, _ctx: &Context, ui: &mut Ui) {
         if self.manifest.is_none() {
             match app
                 .get_from_storage::<WarframeMarketManifest, _, _>(WFM_MANIFEST_KEY, |manifest| {

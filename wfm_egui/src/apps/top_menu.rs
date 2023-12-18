@@ -1,12 +1,12 @@
 use eframe::egui::panel::TopBottomSide;
-use eframe::egui::{Color32, CtxRef, TopBottomPanel};
+use eframe::egui::{Color32, Context, TopBottomPanel};
 
 use wfm_rs::response::ExistingProfileOrders;
 
 use crate::app::{App, Notification, WFM_NOTIFICATIONS_KEY};
 use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
 
-pub fn draw_top_menu_bar(app: &App, ctx: &CtxRef) {
+pub fn draw_top_menu_bar(app: &App, ctx: &Context) {
     let order_text = app.get_from_storage::<ExistingProfileOrders, _, _>(
         WFM_EXISTING_PROFILE_ORDERS_KEY,
         |orders| match orders {

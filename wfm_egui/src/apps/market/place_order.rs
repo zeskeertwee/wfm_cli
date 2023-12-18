@@ -1,7 +1,7 @@
 use crate::app::{App, AppWindow};
 use crate::background_jobs::item_orders::{FetchItemOrdersJob, ItemOrders};
 use crate::util::clone_option_with_inner_ref;
-use eframe::egui::{ComboBox, CtxRef, Grid, ScrollArea, Ui};
+use eframe::egui::{ComboBox, Context, Grid, ScrollArea, Ui};
 use std::cmp::max;
 use wfm_rs::response::ShortItem;
 use wfm_rs::shared::OrderType;
@@ -28,7 +28,7 @@ impl AppWindow for PlaceOrderPopup {
         format!("Placing order for {}", self.item.item_name)
     }
 
-    fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, app: &App, ctx: &Context, ui: &mut Ui) {
         ComboBox::from_label("Select order kind")
             .selected_text(format!("{:?}", self.kind))
             .show_ui(ui, |ui| {

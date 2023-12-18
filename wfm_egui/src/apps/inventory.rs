@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
-use eframe::egui::{Color32, CtxRef, Grid, Ui};
-use eframe::epi::Storage;
+use eframe::egui::{Color32, Context, Grid, Ui};
+use eframe::Storage;
 use log::trace;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
@@ -21,7 +21,7 @@ impl AppWindow for InventoryApp {
         "Inventory".to_string()
     }
 
-    fn update(&mut self, app: &App, ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, app: &App, ctx: &Context, ui: &mut Ui) {
         ui.horizontal(|ui| {
             ui.label("Search");
             ui.add_space(5.0);

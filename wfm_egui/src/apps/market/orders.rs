@@ -1,4 +1,4 @@
-use eframe::egui::{CtxRef, ScrollArea, Ui};
+use eframe::egui::{Context, ScrollArea, Ui};
 
 use wfm_rs::response::ExistingProfileOrders;
 
@@ -15,7 +15,7 @@ impl AppWindow for ExistingProfileOrdersApp {
         "Warframe.market orders".to_string()
     }
 
-    fn update(&mut self, app: &App, _ctx: &CtxRef, ui: &mut Ui) {
+    fn update(&mut self, app: &App, _ctx: &Context, ui: &mut Ui) {
         if self.orders.is_none() {
             match app.get_from_storage::<ExistingProfileOrders, _, _>(
                 WFM_EXISTING_PROFILE_ORDERS_KEY,
@@ -53,6 +53,6 @@ impl AppWindow for ExistingProfileOrdersApp {
                     order.item.en.item_name, order.platinum, order.item.id
                 ));
             }
-        })
+        });
     }
 }
