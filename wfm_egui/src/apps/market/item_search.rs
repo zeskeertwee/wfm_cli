@@ -20,6 +20,7 @@ use wfm_rs::shared::OrderType;
 
 use crate::app::{App, AppEvent, AppWindow, WFM_MANIFEST_KEY};
 use crate::apps::inventory::{Inventory, INVENTORY_KEY};
+use crate::apps::item_details::ItemDetailsApp;
 use crate::apps::market::place_order::PlaceOrderPopup;
 use crate::background_jobs::wfm_manifest::WarframeMarketManifest;
 use crate::background_jobs::wfm_profile_orders::WFM_EXISTING_PROFILE_ORDERS_KEY;
@@ -105,8 +106,9 @@ impl ItemSearchApp {
 
         TableBuilder::new(ui)
             .striped(true)
-            .resizable(true)
-            .columns(Column::remainder(), 4)
+            .resizable(false)
+            .vscroll(true)
+            .columns(Column::remainder(), 5)
             .min_scrolled_height(0.0)
             .header(10.0, |mut header| {
                 header.col(|ui| {
@@ -162,6 +164,12 @@ impl ItemSearchApp {
                             app.get_from_storage::<Inventory, _, _>(INVENTORY_KEY, |i| {
                                 i.unwrap().insert_item(item.clone(), 1);
                             })
+                        }
+                    });
+
+                    row.col(|ui| {
+                        if ui.button("Details").clicked() {
+                            app.queue_window_spawn(ItemDetailsApp::new(item.clone()));
                         }
                     });
                 });
