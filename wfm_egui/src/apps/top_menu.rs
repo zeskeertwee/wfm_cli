@@ -45,6 +45,14 @@ pub fn draw_top_menu_bar(app: &App, ctx: &Context) {
                         );
                     }
                     wfm_item_search.on_hover_text("Open orders on warframe.market");
+
+                    let wfm_live_view = ui.button("Live view");
+                    if wfm_live_view.clicked() {
+                        app.queue_window_spawn(
+                            crate::apps::market::live_view::LiveMarketApp::default(),
+                        );
+                    }
+                    wfm_live_view.on_hover_text("View live orders as they are placed on warframe.market");
                 });
             })
         })

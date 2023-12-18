@@ -23,7 +23,6 @@ serde = { version = "1.0.136", features = ["derive"] }
 levenshtein = "1.0.5"
 atomic_float = "0.1.0"
 serde_with = "3.4.0"
-egui_plot = "0.24.1"
 
 [dependencies.eguikit]
 git = "https://github.com/zeskeertwee/eguikit"
