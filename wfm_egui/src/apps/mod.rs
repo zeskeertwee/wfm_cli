@@ -6,3 +6,4 @@ pub mod top_menu;
 pub mod error_popup;
 pub mod inventory;
 pub mod item_details;
+pub mod ledger;

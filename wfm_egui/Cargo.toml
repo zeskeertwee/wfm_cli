@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 eframe = { version = "0.24.1", features = ["persistence"] }
 egui_extras = { version = "*", features = ["all_loaders"] }
+egui_plot = "0.24.1"
 wfm_rs = { path = "../wfm_rs" }
 anyhow = "1.0.53"
 parking_lot = "0.12.0"
@@ -24,6 +25,7 @@ serde = { version = "1.0.136", features = ["derive"] }
 levenshtein = "1.0.5"
 atomic_float = "0.1.0"
 serde_with = "3.4.0"
+chrono = { version = "0.4.31", features = ["serde"] }
 
 [dependencies.eguikit]
 git = "https://github.com/zeskeertwee/eguikit"

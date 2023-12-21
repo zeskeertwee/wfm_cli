@@ -1,3 +1,4 @@
+use chrono::{DateTime, Local};
 use crate::shared::{ModPolarity, OrderType, Platform};
 use crate::traits::{ItemID, ItemUrl, OrderID};
 use serde::{Deserialize, Serialize};
@@ -170,7 +171,7 @@ impl OrderID for Order {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug, Hash)]
 pub struct OrderUser {
     pub reputation: u16,
     pub region: String,
@@ -198,7 +199,7 @@ pub struct MarketStatistics<T> {
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct MarketSubStatisticsClosed {
-    pub datetime: String,
+    pub datetime: DateTime<Local>,
     pub volume: f32,
     pub min_price: f32,
     pub max_price: f32,

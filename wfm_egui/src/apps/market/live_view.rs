@@ -1,4 +1,5 @@
 use eframe::egui::{Context, Ui};
+use log::info;
 use wfm_rs::websocket::{WebsocketMessagePayload, WebsocketOrder};
 use wfm_rs::shared::OrderType;
 use crate::app::{App, AppWindow, WFM_WS_EVENTS_KEY};
@@ -18,8 +19,14 @@ impl AppWindow for LiveMarketApp {
         if app.present_in_storage(WFM_WS_EVENTS_KEY) {
             app.get_from_storage::<Vec<WebsocketMessagePayload>, _, _>(WFM_WS_EVENTS_KEY, |v| v.unwrap().iter().map(|v| match v {
                 WebsocketMessagePayload::NewOrder { order } => match order.order_type {
-                    OrderType::Buy => self.buy_orders.push(order.clone()),
-                    OrderType::Sell => self.sell_orders.push(order.clone()),
+                    OrderType::Buy => {
+                        info!("BUY {} {}p", order.item.en.item_name, order.platinum);
+                        self.buy_orders.push(order.clone())
+                    },
+                    OrderType::Sell => {
+                        info!("SELL {} {}p", order.item.en.item_name, order.platinum);
+                        self.sell_orders.push(order.clone())
+                    },
                 },
                 _ => (),
             }).collect::<()>());

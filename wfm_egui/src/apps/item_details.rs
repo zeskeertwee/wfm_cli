@@ -6,8 +6,9 @@ use eguikit::Spinner;
 use eguikit::spinner::Style;
 use log::trace;
 use tokio::runtime::Runtime;
-use wfm_rs::response::{MarketStatisticsWrapper, ShortItem};
+use wfm_rs::response::{MarketStatisticsWrapper, MarketSubStatisticsClosed, ShortItem};
 use wfm_rs::User;
+use egui_plot::{BoxElem, BoxPlot, BoxSpread, Legend, Line, Plot};
 use crate::app::{App, AppEvent, AppWindow};
 use crate::worker::Job;
 
@@ -16,6 +17,9 @@ pub const WFM_STATIC_PREFIX: &'static str = "https://warframe.market/static/asse
 pub struct ItemDetailsApp {
     pub item: ShortItem,
     pub market_stats: Option<MarketStatisticsWrapper>,
+    last_48h_stats: Option<MarketSubStatisticsClosed>,
+    median: Vec<[f64; 2]>,
+    sma: Vec<[f64; 2]>
 }
 
 impl ItemDetailsApp {
@@ -23,7 +27,24 @@ impl ItemDetailsApp {
         Self {
             item,
             market_stats: None,
+            last_48h_stats: None,
+            median: Vec::new(),
+            sma: Vec::new()
         }
+    }
+
+    fn build_boxplot(&mut self) {
+        if self.market_stats.is_none() {
+            return;
+        }
+
+        let mut stats = self.market_stats.as_ref().unwrap().statistics_closed._48_hours.clone();
+        stats.sort_by(|a, b| a.datetime.cmp(&b.datetime));
+        self.last_48h_stats = Some(stats.last().unwrap().clone());
+        for (idx, i) in stats.iter().enumerate() {
+            self.median.push([idx as _, i.median as _]);
+            self.sma.push([idx as _, i.wa_price as _]);
+        };
     }
 }
 
@@ -51,6 +72,8 @@ impl AppWindow for ItemDetailsApp {
                 self.market_stats = app.get_from_storage::<MarketStatisticsWrapper, _, _>(&get_market_statistics_storage_key(&self.item), |v| {
                     Some(v.unwrap().clone())
                 });
+
+                self.build_boxplot();
             } else {
                 ui.add_space(50.0);
                 ui.vertical_centered(|ui| {
@@ -68,8 +91,7 @@ impl AppWindow for ItemDetailsApp {
                 .show_loading_spinner(true)
                 .fit_to_exact_size([128.0, 128.0].into()));
 
-            let stats = self.market_stats.as_ref().unwrap();
-            let statslast48 = stats.statistics_live._48_hours.last().unwrap();
+            let statslast48 = self.last_48h_stats.as_ref().unwrap();
 
             ui.vertical(|ui| {
                 display_property(ui, "name", &self.item.item_name);
@@ -77,6 +99,17 @@ impl AppWindow for ItemDetailsApp {
                 display_property(ui, "48h average", &format!("{:.1} platinum", statslast48.avg_price))
             });
         });
+
+        Plot::new("market-price-plot")
+            .legend(Legend::default())
+            .allow_zoom(true)
+            .allow_drag(true)
+            .auto_bounds_x()
+            .auto_bounds_y()
+            .show(ui, |ui| {
+                ui.line(Line::new(self.median.clone()).name("Median price"));
+                ui.line(Line::new(self.sma.clone()).name("Moving average price"));
+            });
     }
 }
 

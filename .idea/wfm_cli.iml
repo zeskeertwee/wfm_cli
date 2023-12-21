@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/cli/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/wfm_egui/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/wfm_rs/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ducatsniper/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

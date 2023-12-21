@@ -93,12 +93,15 @@ pub struct WebsocketConnection {
 }
 
 impl WebsocketConnection {
-    pub fn create(user: &User) -> anyhow::Result<Self> {
+    pub fn create(user: Option<&User>) -> anyhow::Result<Self> {
         info!("Opening WS connection to {}", WS_URL);
 
         let mut req = WS_URL.into_client_request()?;
-        req.headers_mut()
-            .insert("Cookie", format!("JWT={}", user._jwt_token()).parse()?);
+        if let Some(user) = user {
+            req.headers_mut()
+                .insert("Cookie", format!("JWT={}", user._jwt_token().replace("JWT ", "")).parse()?);
+        }
+        
         let (socket, _resp) = match tungstenite::connect(req) {
             Ok(v) => v,
             Err(e) => {

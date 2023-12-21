@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     "wfm_rs",
     "cli",
-    "wfm_egui",
+    "wfm_egui", "ducatsniper",
 ]
 
 [profile.release]

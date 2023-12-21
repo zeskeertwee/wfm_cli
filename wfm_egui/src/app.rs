@@ -15,6 +15,7 @@ use wfm_rs::websocket::WebsocketMessagePayload;
 
 use crate::apps::authenticate::WarframeMarketAuthenticationWindow;
 use crate::apps::inventory::{Inventory, INVENTORY_KEY};
+use crate::apps::ledger::{Ledger, LEDGER_KEY};
 use crate::background_jobs::wfm_manifest::{WarframeMarketManifest, WarframeMarketManifestLoadJob};
 use crate::background_jobs::wfm_profile_orders::{
     FetchExistingProfileOrdersJob, WFM_EXISTING_PROFILE_ORDERS_EXPIRATION_SECONDS,
@@ -133,6 +134,10 @@ impl App {
         })
     }
 
+    pub fn get_user(&self) -> Option<User> {
+        self.with_user(|v| v.map(|u| u.clone()))
+    }
+
     pub fn queue_window_spawn<T: 'static + AppWindow>(&self, window: T) {
         trace!("Queued window spawn: {}", std::any::type_name::<T>());
         self.spawn_queue.lock().push(Box::new(window));
@@ -222,6 +227,26 @@ impl App {
         }
     }
 
+    pub fn get_from_storage_mut_or_insert_default<T: 'static + Default, F: FnOnce(&mut T) -> R, R>(
+        &self,
+        key: &str,
+        func: F,
+    ) -> R {
+        match self.storage.lock().get_mut(key) {
+            Some(mut value) => match value.downcast_mut::<T>() {
+                Some(v) => return func(v),
+                None => (),
+            },
+            None => (),
+        }
+
+        self.insert_into_storage(key, T::default());
+        match self.storage.lock().get_mut(key) {
+            Some(mut value) => return func(value.downcast_mut::<T>().unwrap()),
+            None => panic!("Inserted item not present in storage!"),
+        }
+    }
+
     pub fn remove_from_storage(&self, key: &str) {
         self.storage.lock().remove(key);
 
@@ -233,34 +258,6 @@ impl App {
     }
 
     fn run_background_jobs(&self) {
-        if !self.present_in_storage(WFM_MANIFEST_PENDING_KEY) {
-            let manifest_timestamp = self.get_from_storage::<WarframeMarketManifest, _, _>(
-                WFM_MANIFEST_KEY,
-                |manifest| {
-                    manifest
-                        .and_then(|manifest| Some(manifest.timestamp))
-                        .unwrap_or(0)
-                },
-            );
-
-            if (SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-                - manifest_timestamp)
-                >= WFM_MANIFEST_EXPIRATION_SECONDS
-            {
-                info!("Manifest expired, loading new one");
-                if let Some(user) = self.with_user(|user| user.and_then(|user| Some(user.clone())))
-                {
-                    self.submit_job(WarframeMarketManifestLoadJob::new(user))
-                        .unwrap();
-                } else {
-                    log::warn!("Could not refresh manifest due to missing user");
-                }
-            }
-        }
-
         if !self.present_in_storage(WFM_EXISTING_PROFILE_ORDERS_KEY) {
             if let Some(user) = self.with_user(|user| user.and_then(|user| Some(user.clone()))) {
                 self.submit_job(FetchExistingProfileOrdersJob::new(user))
@@ -288,13 +285,19 @@ impl App {
                 }
             }
         }
+
+        if let Some(user) = self.get_user() && !self.present_in_storage(WFM_MANIFEST_KEY) {
+            self.submit_job(WarframeMarketManifestLoadJob::new(user)).unwrap();
+        }
     }
 
     fn setup(&mut self, ctx: &Context, storage: Option<&dyn Storage>) {
         egui_extras::install_image_loaders(ctx);
 
-	info!("Spawning 1 worker thread");
-        self.worker_pool.lock().spawn_worker().unwrap();
+	    info!("Spawning 4 worker threads");
+        for _ in 0..4 {
+            self.worker_pool.lock().spawn_worker().unwrap();
+        }
 
         let storage = storage.unwrap();
 
@@ -309,21 +312,11 @@ impl App {
             self.queue_window_spawn(WarframeMarketAuthenticationWindow::default());
         }
 
-        if let Some(manifest) = storage.get_string(WFM_MANIFEST_KEY) {
-            match serde_json::from_str::<WarframeMarketManifest>(&manifest) {
-                Ok(manifest) => {
-                    self.insert_into_storage(WFM_MANIFEST_KEY, manifest);
-                    log::info!("Manifest loaded from persistent storage");
-                }
-                Err(err) => {
-                    log::error!("Failed to deserialize manifest: {}", err);
-                }
-            }
-        }
-
         if !self.present_in_storage(INVENTORY_KEY) {
             self.insert_into_storage(INVENTORY_KEY, Inventory::load_from_storage(storage));
         }
+
+        self.submit_job(crate::apps::ledger::load_job::LedgerLoadJob).unwrap();
 
         self.run_background_jobs();
 
@@ -332,7 +325,7 @@ impl App {
         self.submit_notification(Notification::new("WIM", "Application initialized"));
 
         let ws_tx = self.ws_tx.clone();
-        self.with_user(|v| crate::background_jobs::websocket_listener::start(v.unwrap().to_owned(), ws_tx));
+        self.with_user(|v| crate::background_jobs::websocket_listener::start(v.unwrap().to_owned(), ws_tx, ctx.clone()));
     }
 }
 
@@ -391,19 +384,17 @@ impl eframe::App for App {
             None => warn!("No user to save to storage!"),
         });
 
-        self.get_from_storage::<WarframeMarketManifest, _, _>(WFM_MANIFEST_KEY, |manifest| {
-            match manifest {
-                Some(manifest) => {
-                    storage.set_string(WFM_MANIFEST_KEY, serde_json::to_string(manifest).unwrap());
-                }
-                None => warn!("No manifest to save to storage!"),
-            }
-        });
-
         self.get_from_storage::<Inventory, _, _>(INVENTORY_KEY, |i| {
             match i {
                 Some(i) => i.save_to_storage(storage),
                 None => warn!("No inventory to save to storage!"),
+            }
+        });
+
+        self.get_from_storage::<Ledger, _, _>(LEDGER_KEY, |l| {
+            match l {
+                Some(ledger) => ledger.save_to_disk().unwrap(),
+                None => warn!("No ledger to save to disk!"),
             }
         });
     }
